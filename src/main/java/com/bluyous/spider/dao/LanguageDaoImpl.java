@@ -29,8 +29,8 @@ public class LanguageDaoImpl implements LanguageDao {
     @Override
     public void saveOrUpdate(List<Language> languages) {
         StringBuilder sql = new StringBuilder();
-        sql.append("INSERT INTO language (id, label) VALUES (:id, :label)\n");
-        sql.append("ON DUPLICATE KEY UPDATE label = values(label);\n");
+        sql.append("INSERT INTO language (language_code, language_name) VALUES (:languageCode, :languageName)\n");
+        sql.append("ON DUPLICATE KEY UPDATE language_name = values(language_name);\n");
         if (languages == null) {
             return;
         }

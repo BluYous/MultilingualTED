@@ -1,30 +1,37 @@
 package com.bluyous.spider.bean;
 
+/**
+ * @author BluYous
+ * @version 1.0
+ * @since 2018-02-19
+ */
 public class Topic {
-    private String id;
+    private String topicId;
     private String label;
     
     @Override
     public String toString() {
         return "Topic{" +
-                "id='" + id + '\'' +
+                "topicId='" + topicId + '\'' +
                 ", label='" + label + '\'' +
                 '}';
     }
     
-    public String getId() {
-        return id;
+    public String getTopicId() {
+        return topicId;
     }
     
-    public void setId(String id) {
-        this.id = id;
+    public void setTopicId(String topicId) {
+        this.topicId = topicId;
     }
     
     public String getLabel() {
         return label;
     }
-    
+
     public void setLabel(String label) {
         this.label = label;
     }
+    
+    
 }

@@ -29,7 +29,7 @@ public class EventDaoImpl implements EventDao {
     @Override
     public void saveOrUpdate(List<Event> events) {
         StringBuilder sql = new StringBuilder();
-        sql.append("INSERT INTO event (id, label, year) VALUES (:id, :label, :year)\n");
+        sql.append("INSERT INTO event (event_id, label, year) VALUES (:eventId, :label, :year)\n");
         sql.append("ON DUPLICATE KEY UPDATE label = values(label), year = values(year);\n");
         if (events == null) {
             return;

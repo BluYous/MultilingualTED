@@ -1,34 +1,30 @@
 package com.bluyous.spider.bean;
 
-
+/**
+ * @author BluYous
+ * @version 1.0
+ * @since 2018-02-19
+ */
 public class Event {
-    private String id;
+    private String eventId;
     private String label;
     private Integer year;
     
     @Override
     public String toString() {
         return "Event{" +
-                "id='" + id + '\'' +
+                "eventId='" + eventId + '\'' +
                 ", label='" + label + '\'' +
                 ", year=" + year +
                 '}';
     }
     
-    public Integer getYear() {
-        return year;
+    public String getEventId() {
+        return eventId;
     }
     
-    public void setYear(Integer year) {
-        this.year = year;
-    }
-    
-    public String getId() {
-        return id;
-    }
-    
-    public void setId(String id) {
-        this.id = id;
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
     }
     
     public String getLabel() {
@@ -37,5 +33,13 @@ public class Event {
     
     public void setLabel(String label) {
         this.label = label;
+    }
+    
+    public Integer getYear() {
+        return year;
+    }
+    
+    public void setYear(Integer year) {
+        this.year = year;
     }
 }

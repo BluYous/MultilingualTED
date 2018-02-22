@@ -19,6 +19,7 @@ import java.util.List;
 public class TopicDaoImpl implements TopicDao {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    
     @Autowired
     public TopicDaoImpl(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -28,7 +29,7 @@ public class TopicDaoImpl implements TopicDao {
     @Override
     public void saveOrUpdate(List<Topic> topics) {
         StringBuilder sql = new StringBuilder();
-        sql.append("INSERT INTO topic (id, label) VALUES (:id, :label)\n");
+        sql.append("INSERT INTO topic (topic_id, label) VALUES (:topicId, :label)\n");
         sql.append("ON DUPLICATE KEY UPDATE label = values(label);\n");
         if (topics == null) {
             return;
