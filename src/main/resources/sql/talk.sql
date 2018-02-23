@@ -33,3 +33,35 @@ VALUES (:talkId, :talkUrl, :talkSlug, :talkDefaultLanguageCode)
 ON DUPLICATE KEY UPDATE talk_url = values(talk_url), talk_slug = values(talk_slug),
   talk_default_language_code     = values(talk_default_language_code);
 
+# 插入额外信息
+INSERT INTO talk (talk_id, viewed_count, filmed_datetime, published_datetime,
+                  duration, intro_duration, ad_duration, post_ad_duration,
+                  native_language, event_blurb, event_label, thumb_img_url,
+                  thumb_img_slug, last_update_datetime)
+VALUES
+  (:talkId, :viewedCount, :filmedDatetime, :publishedDatetime, :duration, :introDuration, :adDuration, :postAdDuration,
+            :nativeLanguage, :eventBlurb, :eventLabel, :thumbImgUrl, :thumbImgSlug, :lastUpdateDatetime)
+ON DUPLICATE KEY UPDATE
+  viewed_count         = values(viewed_count),
+  filmed_datetime      = values(filmed_datetime),
+  published_datetime   = values(published_datetime),
+  duration             = values(duration),
+  intro_duration       = values(intro_duration),
+  ad_duration          = values(ad_duration),
+  post_ad_duration     = values(post_ad_duration),
+  native_language      = values(native_language),
+  event_blurb          = values(event_blurb),
+  event_label          = values(event_label),
+  thumb_img_url        = values(thumb_img_url),
+  thumb_img_slug       = values(thumb_img_slug),
+  last_update_datetime = values(last_update_datetime);
+
+SELECT
+  talk_id,
+  talk_url,
+  talk_default_language_code
+FROM talk
+WHERE last_update_datetime IS NULL
+      OR TIMESTAMPDIFF(DAY, last_update_datetime, sysdate()) >= 1;
+
+

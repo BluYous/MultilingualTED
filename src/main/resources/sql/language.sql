@@ -13,9 +13,15 @@ CREATE TABLE language (
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
-
+# 插入基本信息
 INSERT INTO language (language_code, language_name) VALUES (:languageCode, :languageName)
 ON DUPLICATE KEY UPDATE language_name = values(language_name);
+
+# 插入全部信息
+INSERT INTO language (language_code, language_name, endonym, iana_code, is_rtl)
+VALUES (:languageCode, :languageName, :endonym, :ianaCode, :isRtl)
+ON DUPLICATE KEY UPDATE language_name = values(language_name), endonym = values(endonym),
+  iana_code                           = values(iana_code), is_rtl = values(is_rtl);
 
 SELECT
   max(length(language_code)),

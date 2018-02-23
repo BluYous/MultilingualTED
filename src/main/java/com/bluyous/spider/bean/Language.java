@@ -1,5 +1,7 @@
 package com.bluyous.spider.bean;
 
+import java.util.Objects;
+
 /**
  * @author BluYous
  * @version 1.0
@@ -11,6 +13,34 @@ public class Language {
     private String endonym;
     private String ianaCode;
     private String isRtl;
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(languageCode, languageName, endonym, ianaCode, isRtl);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Language language = (Language) o;
+        return Objects.equals(languageCode, language.languageCode) &&
+                Objects.equals(languageName, language.languageName) &&
+                Objects.equals(endonym, language.endonym) &&
+                Objects.equals(ianaCode, language.ianaCode) &&
+                Objects.equals(isRtl, language.isRtl);
+    }
+    
+    @Override
+    public String toString() {
+        return "Language{" +
+                "languageCode='" + languageCode + '\'' +
+                ", languageName='" + languageName + '\'' +
+                ", endonym='" + endonym + '\'' +
+                ", ianaCode='" + ianaCode + '\'' +
+                ", isRtl='" + isRtl + '\'' +
+                '}';
+    }
     
     public String getLanguageCode() {
         return languageCode;

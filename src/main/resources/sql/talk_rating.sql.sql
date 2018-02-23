@@ -12,3 +12,9 @@ CREATE TABLE talk_rating (
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
+
+INSERT INTO talk_rating (talk_id, rating_id, rating_name, rating_count)
+VALUES (:talkId, :ratingId, :ratingName, :ratingCount)
+ON DUPLICATE KEY UPDATE rating_name = values(rating_name), rating_count = values(rating_count)
+
+SELECT talk_id,count(*) from talk_rating GROUP BY talk_id
