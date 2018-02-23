@@ -55,11 +55,11 @@ public class TalkDaoImpl implements TalkDao {
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO talk (talk_id, viewed_count, filmed_datetime, published_datetime,\n");
         sql.append("                  duration, intro_duration, ad_duration, post_ad_duration,\n");
-        sql.append("                  native_language, event_blurb, event_label, thumb_img_url,\n");
+        sql.append("                  native_language, event_label, event_blurb, thumb_img_url,\n");
         sql.append("                  thumb_img_slug, last_update_datetime)\n");
         sql.append("VALUES\n");
         sql.append("  (:talkId, :viewedCount, :filmedDatetime, :publishedDatetime, :duration, :introDuration, :adDuration, :postAdDuration,\n");
-        sql.append("            :nativeLanguage, :eventBlurb, :eventLabel, :thumbImgUrl, :thumbImgSlug, :lastUpdateDatetime)\n");
+        sql.append("            :nativeLanguage, :eventLabel, :eventBlurb, :thumbImgUrl, :thumbImgSlug, :lastUpdateDatetime)\n");
         sql.append("ON DUPLICATE KEY UPDATE\n");
         sql.append("  viewed_count         = values(viewed_count),\n");
         sql.append("  filmed_datetime      = values(filmed_datetime),\n");
@@ -69,12 +69,12 @@ public class TalkDaoImpl implements TalkDao {
         sql.append("  ad_duration          = values(ad_duration),\n");
         sql.append("  post_ad_duration     = values(post_ad_duration),\n");
         sql.append("  native_language      = values(native_language),\n");
-        sql.append("  event_blurb          = values(event_blurb),\n");
         sql.append("  event_label          = values(event_label),\n");
+        sql.append("  event_blurb          = values(event_blurb),\n");
         sql.append("  thumb_img_url        = values(thumb_img_url),\n");
         sql.append("  thumb_img_slug       = values(thumb_img_slug),\n");
         sql.append("  last_update_datetime = values(last_update_datetime);\n");
-        
+    
         SqlParameterSource[] sqlParameterSources = new SqlParameterSource[talks.size()];
         for (int i = 0; i < talks.size(); i++) {
             sqlParameterSources[i] = new BeanPropertySqlParameterSource(talks.get(i));

@@ -63,6 +63,8 @@ public class TedSpiderService {
         // synTopics();
         // synTalksList();
         synTalkDetail();
+        
+        System.out.println("同步完成！");
     }
     
     private void synTalkDetail() {
@@ -253,8 +255,8 @@ public class TedSpiderService {
         final Float adDuration = playerTalksJson.getFloat("adDuration");
         final Float postAdDuration = playerTalksJson.getFloat("postAdDuration");
         final String nativeLanguage = playerTalksJson.getString("nativeLanguage");
-        final String eventBlurb = talksJson.getString("event_blurb");
         final String eventLabel = playerTalksJson.getString("event");
+        final String eventBlurb = talksJson.getString("event_blurb");
         final String thumbImgUrl = talksJson.getString("hero");
         
         String thumbImgSlug = null;
@@ -274,8 +276,8 @@ public class TedSpiderService {
         talk.setAdDuration(adDuration);
         talk.setPostAdDuration(postAdDuration);
         talk.setNativeLanguage(nativeLanguage);
-        talk.setEventBlurb(eventBlurb);
         talk.setEventLabel(eventLabel);
+        talk.setEventBlurb(eventBlurb);
         talk.setThumbImgUrl(thumbImgUrl);
         talk.setThumbImgSlug(thumbImgSlug);
         talk.setLastUpdateDatetime(lastUpdateDatetime);

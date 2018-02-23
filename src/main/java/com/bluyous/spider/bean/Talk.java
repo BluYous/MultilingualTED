@@ -20,8 +20,8 @@ public class Talk {
     private Float adDuration;
     private Float postAdDuration;
     private String nativeLanguage;
-    private String eventBlurb;
     private String eventLabel;
+    private String eventBlurb;
     private String thumbImgUrl;
     private String thumbImgSlug;
     private String thumbImgIsDownloaded;

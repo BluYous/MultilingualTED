@@ -13,8 +13,8 @@ CREATE TABLE talk (
   ad_duration                DECIMAL(10, 4),
   post_ad_duration           DECIMAL(10, 4),
   native_language            VARCHAR(30),
-  event_blurb                VARCHAR(2500),
   event_label                VARCHAR(40),
+  event_blurb                VARCHAR(2500),
   thumb_img_url              VARCHAR(255),
   thumb_img_slug             VARCHAR(60),
   thumb_img_is_downloaded    CHAR(1)               DEFAULT 'N',
@@ -36,11 +36,11 @@ ON DUPLICATE KEY UPDATE talk_url = values(talk_url), talk_slug = values(talk_slu
 # 插入额外信息
 INSERT INTO talk (talk_id, viewed_count, filmed_datetime, published_datetime,
                   duration, intro_duration, ad_duration, post_ad_duration,
-                  native_language, event_blurb, event_label, thumb_img_url,
+                  native_language, event_label, event_blurb, thumb_img_url,
                   thumb_img_slug, last_update_datetime)
 VALUES
   (:talkId, :viewedCount, :filmedDatetime, :publishedDatetime, :duration, :introDuration, :adDuration, :postAdDuration,
-            :nativeLanguage, :eventBlurb, :eventLabel, :thumbImgUrl, :thumbImgSlug, :lastUpdateDatetime)
+            :nativeLanguage, :eventLabel, :eventBlurb, :thumbImgUrl, :thumbImgSlug, :lastUpdateDatetime)
 ON DUPLICATE KEY UPDATE
   viewed_count         = values(viewed_count),
   filmed_datetime      = values(filmed_datetime),
@@ -50,8 +50,8 @@ ON DUPLICATE KEY UPDATE
   ad_duration          = values(ad_duration),
   post_ad_duration     = values(post_ad_duration),
   native_language      = values(native_language),
-  event_blurb          = values(event_blurb),
   event_label          = values(event_label),
+  event_blurb          = values(event_blurb),
   thumb_img_url        = values(thumb_img_url),
   thumb_img_slug       = values(thumb_img_slug),
   last_update_datetime = values(last_update_datetime);
@@ -63,5 +63,8 @@ SELECT
 FROM talk
 WHERE last_update_datetime IS NULL
       OR TIMESTAMPDIFF(DAY, last_update_datetime, sysdate()) >= 1;
+
+SELECT  event_label,event_blurb
+FROM talk
 
 
