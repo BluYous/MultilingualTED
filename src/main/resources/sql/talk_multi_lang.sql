@@ -19,8 +19,15 @@ CREATE TABLE talk_multi_lang (
 INSERT INTO talk_multi_lang (talk_id, language_code, title, speaker, description)
 VALUES (:talkId, :languageCode, :title, :speaker, :description)
 ON DUPLICATE KEY UPDATE
-  title         = values(title),
-  speaker       = values(speaker),
-  description   = values(description);
+  title       = values(title),
+  speaker     = values(speaker),
+  description = values(description);
 
-SELECT * from talk_multi_lang where talk_id=9214;
+SELECT *
+FROM talk_multi_lang
+WHERE talk_id = 9214;
+
+SELECT
+  talk_id,
+  language_code
+FROM talk_multi_lang

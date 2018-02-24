@@ -37,9 +37,10 @@ public class TedSpiderService {
     private final SpeakerDao speakerDao;
     private final RatingDao ratingDao;
     private final TalkDownloadDao talkDownloadDao;
+    private final TranscriptDao transcriptDao;
     
     @Autowired
-    public TedSpiderService(EventDao eventDao, LanguageDao languageDao, TopicDao topicDao, TalkDao talkDao, SpeakerDao speakerDao, RatingDao ratingDao, TalkDownloadDao talkDownloadDao) {
+    public TedSpiderService(EventDao eventDao, LanguageDao languageDao, TopicDao topicDao, TalkDao talkDao, SpeakerDao speakerDao, RatingDao ratingDao, TalkDownloadDao talkDownloadDao, TranscriptDao transcriptDao) {
         this.eventDao = eventDao;
         this.languageDao = languageDao;
         this.topicDao = topicDao;
@@ -47,6 +48,7 @@ public class TedSpiderService {
         this.speakerDao = speakerDao;
         this.ratingDao = ratingDao;
         this.talkDownloadDao = talkDownloadDao;
+        this.transcriptDao = transcriptDao;
     }
     
     @Transactional
@@ -62,9 +64,75 @@ public class TedSpiderService {
         // synLanguages();
         // synTopics();
         // synTalksList();
-        synTalkDetail();
+        // synTalkDetail();
+        synTalkTranscript();
         
         System.out.println("同步完成！");
+    }
+    
+    private void synTalkTranscript() {
+        List<Transcript> toSynSubtitleList = transcriptDao.listToSynSubtitleList();
+        for (Transcript toSynSubtitle : toSynSubtitleList) {
+            final Integer talkId = toSynSubtitle.getTalkId();
+            final String languageCode = toSynSubtitle.getLanguageCode();
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            JSONObject json = getTranscriptJson(talkId, languageCode);
+            if (json == null) {
+                continue;
+            }
+            
+            List<Transcript> transcripts = new ArrayList<>();
+            Integer sid = 0;
+            
+            Integer paragraph = 0;
+            JSONArray paragraphsArray = json.getJSONArray("paragraphs");
+            for (int i = 0; i < paragraphsArray.size(); i++) {
+                JSONArray cuesArray = paragraphsArray.getJSONObject(i).getJSONArray("cues");
+                paragraph++;
+                for (int j = 0; j < cuesArray.size(); j++) {
+                    Integer subtitleTime = cuesArray.getJSONObject(j).getInteger("time");
+                    String subtitleText = cuesArray.getJSONObject(j).getString("text");
+                    
+                    Transcript transcript = new Transcript();
+                    transcript.setTalkId(talkId);
+                    transcript.setLanguageCode(languageCode);
+                    transcript.setSid(++sid);
+                    transcript.setParagraph(paragraph);
+                    transcript.setSubtitleTime(subtitleTime);
+                    transcript.setSubtitleText(subtitleText);
+                    
+                    transcripts.add(transcript);
+                }
+            }
+            transcriptDao.saveOrUpdate(transcripts);
+            transcriptDao.deleteRedundantTranscript(transcripts.get(transcripts.size() - 1));
+        }
+    }
+    
+    private JSONObject getTranscriptJson(Integer talkId, String languageCode) {
+        final String reqUrl = "https://www.ted.com/talks/" + talkId + "/transcript.json?language=" + languageCode;
+        final Map<String, String> headers = new HashMap<>();
+        headers.put("Accept", "application/json, text/javascript, */*; q=0.01");
+        headers.put("Accept-Encoding", "gzip, deflate, br");
+        headers.put("Referer", "https://www.ted.com/talks");
+        headers.put("User-Agent",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36");
+        headers.put("X-Requested-With", "XMLHttpRequest");
+        Connection.Response res = null;
+        try {
+            res = Jsoup.connect(reqUrl).headers(headers).timeout(TIMEOUT).ignoreContentType(true).execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (res != null) {
+            String json = res.body();
+            return JSON.parseObject(json);
+        }
+        return null;
     }
     
     private void synTalkDetail() {
