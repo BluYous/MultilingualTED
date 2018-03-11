@@ -23,4 +23,11 @@ ON DUPLICATE KEY UPDATE
   file_size_bytes = values(file_size_bytes),
   mime_type       = values(mime_type)
 
-SELECT * from talk_download ORDER BY talk_id,file_size_bytes desc
+SELECT *
+FROM talk_download
+ORDER BY talk_id, file_size_bytes DESC
+
+SELECT *
+FROM talk_download
+# WHERE talk_id = 5351
+ORDER BY file_size_bytes DESC

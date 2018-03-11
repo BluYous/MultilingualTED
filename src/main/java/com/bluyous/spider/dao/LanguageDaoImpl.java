@@ -9,7 +9,6 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author BluYous
@@ -44,7 +43,7 @@ public class LanguageDaoImpl implements LanguageDao {
     }
     
     @Override
-    public void saveOrUpdate(Set<Language> languages) {
+    public void saveOrUpdate(List<Language> languages) {
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO language (language_code, language_name, endonym, iana_code, is_rtl)\n");
         sql.append("VALUES (:languageCode, :languageName, :endonym, :ianaCode, :isRtl)\n");

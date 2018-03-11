@@ -3,7 +3,6 @@ package com.bluyous.spider.dao;
 import com.bluyous.spider.bean.Language;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * @author BluYous
@@ -13,5 +12,5 @@ import java.util.Set;
 public interface LanguageDao {
     void saveOrUpdateBasicInfo(List<Language> languages);
     
-    void saveOrUpdate(Set<Language> languages);
+    void saveOrUpdate(List<Language> languages);
 }

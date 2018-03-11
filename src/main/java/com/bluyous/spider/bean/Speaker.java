@@ -13,7 +13,6 @@ public class Speaker {
     private String description;
     private String photoUrl;
     private String photoSlug;
-    private String photoIsDownloaded;
     private String whatOthersSay;
     private String whoTheyAre;
     private String whyListen;
@@ -30,7 +29,6 @@ public class Speaker {
                 ", description='" + description + '\'' +
                 ", photoUrl='" + photoUrl + '\'' +
                 ", photoSlug='" + photoSlug + '\'' +
-                ", photoIsDownloaded='" + photoIsDownloaded + '\'' +
                 ", whatOthersSay='" + whatOthersSay + '\'' +
                 ", whoTheyAre='" + whoTheyAre + '\'' +
                 ", whyListen='" + whyListen + '\'' +
@@ -93,14 +91,6 @@ public class Speaker {
     
     public void setPhotoSlug(String photoSlug) {
         this.photoSlug = photoSlug;
-    }
-    
-    public String getPhotoIsDownloaded() {
-        return photoIsDownloaded;
-    }
-    
-    public void setPhotoIsDownloaded(String photoIsDownloaded) {
-        this.photoIsDownloaded = photoIsDownloaded;
     }
     
     public String getWhatOthersSay() {

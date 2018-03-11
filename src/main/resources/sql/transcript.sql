@@ -6,7 +6,7 @@ CREATE TABLE transcript (
   sid             INT(11)      NOT NULL,
   paragraph       INT(11),
   subtitle_time   INT(11),
-  subtitle_text   VARCHAR(255),
+  subtitle_text   VARCHAR(300),
   
   entry_datetime  TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   update_datetime TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
@@ -26,12 +26,17 @@ DELETE FROM transcript
 WHERE talk_id = :talkId AND language_code = :languageCode
       AND sid > :sid;
 
-SELECT language_code,count(*)
+SELECT
+  talk_id,
+  language_code,
+  count(*)
 FROM transcript
-WHERE talk_id = 6602
-  GROUP BY language_code
+WHERE talk_id = 2854
+GROUP BY language_code
 ORDER BY talk_id, sid, language_code
 
-SELECT * from transcript where talk_id=6602
+SELECT *
+FROM transcript
+WHERE talk_id = 2854 and language_code in('en','zh-tw','ja') ORDER BY sid,language_code
 
-INSERT INTO ted.transcript (talk_id, language_code, sid, paragraph, subtitle_time, subtitle_text, entry_datetime, update_datetime) VALUES (6602, 'fr', 201, 20, 837341, '(Applaudissements)', '2018-02-23 15:57:12.706', '2018-02-23 15:57:12.706');
+SELECT max(length(subtitle_text)) from transcript

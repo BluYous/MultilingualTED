@@ -14,10 +14,9 @@ CREATE TABLE talk (
   post_ad_duration           DECIMAL(10, 4),
   native_language            VARCHAR(30),
   event_label                VARCHAR(40),
-  event_blurb                VARCHAR(2500),
+  event_blurb                VARCHAR(500),
   thumb_img_url              VARCHAR(255),
   thumb_img_slug             VARCHAR(60),
-  thumb_img_is_downloaded    CHAR(1)               DEFAULT 'N',
   last_update_datetime       DATETIME,
   
   entry_datetime             TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -34,27 +33,33 @@ ON DUPLICATE KEY UPDATE talk_url = values(talk_url), talk_slug = values(talk_slu
   talk_default_language_code     = values(talk_default_language_code);
 
 # 插入额外信息
-INSERT INTO talk (talk_id, viewed_count, filmed_datetime, published_datetime,
-                  duration, intro_duration, ad_duration, post_ad_duration,
-                  native_language, event_label, event_blurb, thumb_img_url,
-                  thumb_img_slug, last_update_datetime)
+INSERT INTO talk (talk_id, talk_url, talk_slug, talk_default_language_code,
+                  viewed_count, filmed_datetime, published_datetime, duration,
+                  intro_duration, ad_duration, post_ad_duration, native_language,
+                  event_label, event_blurb, thumb_img_url, thumb_img_slug,
+                  last_update_datetime)
 VALUES
-  (:talkId, :viewedCount, :filmedDatetime, :publishedDatetime, :duration, :introDuration, :adDuration, :postAdDuration,
-            :nativeLanguage, :eventLabel, :eventBlurb, :thumbImgUrl, :thumbImgSlug, :lastUpdateDatetime)
+  (:talkId, :talkUrl, :talkSlug, :talkDefaultLanguageCode, :viewedCount,
+            :filmedDatetime, :publishedDatetime, :duration, :introDuration,
+            :adDuration, :postAdDuration, :nativeLanguage, :eventLabel,
+   :eventBlurb, :thumbImgUrl, :thumbImgSlug, :lastUpdateDatetime)
 ON DUPLICATE KEY UPDATE
-  viewed_count         = values(viewed_count),
-  filmed_datetime      = values(filmed_datetime),
-  published_datetime   = values(published_datetime),
-  duration             = values(duration),
-  intro_duration       = values(intro_duration),
-  ad_duration          = values(ad_duration),
-  post_ad_duration     = values(post_ad_duration),
-  native_language      = values(native_language),
-  event_label          = values(event_label),
-  event_blurb          = values(event_blurb),
-  thumb_img_url        = values(thumb_img_url),
-  thumb_img_slug       = values(thumb_img_slug),
-  last_update_datetime = values(last_update_datetime);
+  talk_url                   = values(talk_url),
+  talk_slug                  = values(talk_slug),
+  talk_default_language_code = values(talk_default_language_code),
+  viewed_count               = values(viewed_count),
+  filmed_datetime            = values(filmed_datetime),
+  published_datetime         = values(published_datetime),
+  duration                   = values(duration),
+  intro_duration             = values(intro_duration),
+  ad_duration                = values(ad_duration),
+  post_ad_duration           = values(post_ad_duration),
+  native_language            = values(native_language),
+  event_label                = values(event_label),
+  event_blurb                = values(event_blurb),
+  thumb_img_url              = values(thumb_img_url),
+  thumb_img_slug             = values(thumb_img_slug),
+  last_update_datetime       = values(last_update_datetime);
 
 SELECT
   talk_id,
@@ -64,7 +69,8 @@ FROM talk
 WHERE last_update_datetime IS NULL
       OR TIMESTAMPDIFF(DAY, last_update_datetime, sysdate()) >= 1;
 
-SELECT  event_label,event_blurb
+SELECT *
 FROM talk
+WHERE talk_id = 2854
 
-
+SELECT max(length(event_blurb)) from talk

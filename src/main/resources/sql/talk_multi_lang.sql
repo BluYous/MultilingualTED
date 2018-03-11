@@ -4,8 +4,8 @@ CREATE TABLE talk_multi_lang (
   talk_id         INT(11)      NOT NULL,
   language_code   VARCHAR(20),
   title           VARCHAR(255),
-  speaker         VARCHAR(60),
-  description     VARCHAR(2000),
+  speaker         VARCHAR(255),
+  description     VARCHAR(5000),
   
   
   entry_datetime  TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -28,6 +28,17 @@ FROM talk_multi_lang
 WHERE talk_id = 9214;
 
 SELECT
-  talk_id,
-  language_code
+  talk_multi_lang.talk_id,
+  language.language_code,
+  language_name,
+  endonym,
+  title,
+  speaker,
+  is_rtl
 FROM talk_multi_lang
+  INNER JOIN language ON talk_multi_lang.language_code = language.language_code
+  INNER JOIN talk ON talk.talk_id = talk_multi_lang.talk_id
+WHERE talk_multi_lang.talk_id = 2854
+ORDER BY endonym
+
+SELECT max(length(description)) from talk_multi_lang

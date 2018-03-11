@@ -1,22 +1,21 @@
 DROP TABLE IF EXISTS speaker;
 
 CREATE TABLE speaker (
-  speaker_id          INT(11)      NOT NULL,
-  slug                VARCHAR(60),
-  first_name          VARCHAR(60),
-  last_name           VARCHAR(60),
-  description         VARCHAR(60),
-  photo_url           VARCHAR(255),
-  photo_slug          VARCHAR(60),
-  photo_is_downloaded CHAR(1)               DEFAULT 'N',
-  what_others_say     VARCHAR(1000),
-  who_they_are        VARCHAR(255),
-  why_listen          VARCHAR(2000),
-  title               VARCHAR(255),
-  middle_initial      VARCHAR(255),
+  speaker_id      INT(11)      NOT NULL,
+  slug            VARCHAR(60),
+  first_name      VARCHAR(60),
+  last_name       VARCHAR(60),
+  description     VARCHAR(255),
+  photo_url       VARCHAR(255),
+  photo_slug      VARCHAR(60),
+  what_others_say VARCHAR(1000),
+  who_they_are    VARCHAR(255),
+  why_listen      TEXT,
+  title           VARCHAR(255),
+  middle_initial  VARCHAR(255),
   
-  entry_datetime      TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  update_datetime     TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  entry_datetime  TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  update_datetime TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
   PRIMARY KEY (speaker_id)
 )
   ENGINE = InnoDB

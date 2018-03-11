@@ -12,11 +12,7 @@ import java.util.Map;
  * @since 2018-02-21
  */
 public interface TalkDao {
-    void saveOrUpdateBasicInfo(List<Talk> talks);
-    
-    void saveOrUpdateExtraInfo(List<Talk> talks);
-    
-    List<Talk> listTalkBasicInfo();
+    void saveOrUpdate(Talk talk);
     
     void saveOrUpdateTalkSpeakerRef(List<Map<String, Object>> mapList);
     

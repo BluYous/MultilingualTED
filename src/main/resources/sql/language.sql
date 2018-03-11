@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS language;
 
 CREATE TABLE language (
-  language_code   VARCHAR(20) COMMENT 'id' NOT NULL,
+  language_code   VARCHAR(10) COMMENT 'id' NOT NULL,
   language_name   VARCHAR(30) COMMENT 'label',
   endonym         VARCHAR(30) COMMENT '当地语言称呼',
   iana_code       VARCHAR(30),

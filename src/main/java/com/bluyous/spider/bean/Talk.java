@@ -24,7 +24,6 @@ public class Talk {
     private String eventBlurb;
     private String thumbImgUrl;
     private String thumbImgSlug;
-    private String thumbImgIsDownloaded;
     private Timestamp lastUpdateDatetime;
     
     @Override
@@ -42,11 +41,10 @@ public class Talk {
                 ", adDuration=" + adDuration +
                 ", postAdDuration=" + postAdDuration +
                 ", nativeLanguage='" + nativeLanguage + '\'' +
-                ", eventBlurb='" + eventBlurb + '\'' +
                 ", eventLabel='" + eventLabel + '\'' +
+                ", eventBlurb='" + eventBlurb + '\'' +
                 ", thumbImgUrl='" + thumbImgUrl + '\'' +
                 ", thumbImgSlug='" + thumbImgSlug + '\'' +
-                ", thumbImgIsDownloaded='" + thumbImgIsDownloaded + '\'' +
                 ", lastUpdateDatetime=" + lastUpdateDatetime +
                 '}';
     }
@@ -147,20 +145,20 @@ public class Talk {
         this.nativeLanguage = nativeLanguage;
     }
     
-    public String getEventBlurb() {
-        return eventBlurb;
-    }
-    
-    public void setEventBlurb(String eventBlurb) {
-        this.eventBlurb = eventBlurb;
-    }
-    
     public String getEventLabel() {
         return eventLabel;
     }
     
     public void setEventLabel(String eventLabel) {
         this.eventLabel = eventLabel;
+    }
+    
+    public String getEventBlurb() {
+        return eventBlurb;
+    }
+    
+    public void setEventBlurb(String eventBlurb) {
+        this.eventBlurb = eventBlurb;
     }
     
     public String getThumbImgUrl() {
@@ -177,14 +175,6 @@ public class Talk {
     
     public void setThumbImgSlug(String thumbImgSlug) {
         this.thumbImgSlug = thumbImgSlug;
-    }
-    
-    public String getThumbImgIsDownloaded() {
-        return thumbImgIsDownloaded;
-    }
-    
-    public void setThumbImgIsDownloaded(String thumbImgIsDownloaded) {
-        this.thumbImgIsDownloaded = thumbImgIsDownloaded;
     }
     
     public Timestamp getLastUpdateDatetime() {
