@@ -6,7 +6,8 @@ package com.bluyous.spider.service;
  * @since 2018-03-01
  */
 public interface TedSpiderService {
-    int SLEEP_TIME = 600;
+    int CONNECTION_TIME_OUT_MILLIS = 1000 * 60;
+    int NEXT_REQ_MILLIS = 600;
     int MAX_ERROR_TIMES = 10;
     
     void runSpider();

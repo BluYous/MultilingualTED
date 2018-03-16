@@ -14,19 +14,17 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static com.bluyous.spider.service.TedSpiderService.MAX_ERROR_TIMES;
-import static com.bluyous.spider.service.TedSpiderService.SLEEP_TIME;
+import static com.bluyous.spider.service.TedSpiderService.*;
 
 /**
  * @author BluYous
@@ -35,6 +33,7 @@ import static com.bluyous.spider.service.TedSpiderService.SLEEP_TIME;
  */
 @Service
 public class TedSpiderTransactionalHelpService {
+    private static final Logger logger = LoggerFactory.getLogger(TedSpiderTransactionalHelpService.class);
     private final EventDao eventDao;
     private final LanguageDao languageDao;
     private final TopicDao topicDao;
@@ -60,11 +59,12 @@ public class TedSpiderTransactionalHelpService {
         headers.put("X-Requested-With", "XMLHttpRequest");
         Connection.Response res;
         
-        try {
-            int maxErrorTimes = MAX_ERROR_TIMES;
-            while (true) {
+        int maxErrorTimes = MAX_ERROR_TIMES;
+        while (true) {
+            try {
                 res = Jsoup.connect(reqUrl).headers(headers).timeout(0).maxBodySize(0).ignoreContentType(true).ignoreHttpErrors(true).execute();
                 if (maxErrorTimes < 0) {
+                    logger.error("Error URL: {}, check that the URL is correct", reqUrl);
                     break;
                 }
                 if (res != null && (res.statusCode() == 404 || res.statusCode() == 504)) {
@@ -87,10 +87,17 @@ public class TedSpiderTransactionalHelpService {
                     eventDao.saveOrUpdate(events);
                     return;
                 }
+            } catch (IOException e) {
+                logger.error("Timeout URL: {}, will retry after {} seconds", reqUrl, CONNECTION_TIME_OUT_MILLIS / 1000);
+                logger.error("Error message: {}, maxErrorTimes is left {}", e.getMessage(), --maxErrorTimes);
+                try {
+                    Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
+                } catch (InterruptedException e1) {
+                    logger.error(Arrays.toString(e1.getStackTrace()));
+                }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+        
     }
     
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -104,11 +111,13 @@ public class TedSpiderTransactionalHelpService {
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36");
         headers.put("X-Requested-With", "XMLHttpRequest");
         Connection.Response res;
-        try {
-            int maxErrorTimes = MAX_ERROR_TIMES;
-            while (true) {
+        
+        int maxErrorTimes = MAX_ERROR_TIMES;
+        while (true) {
+            try {
                 res = Jsoup.connect(reqUrl).headers(headers).timeout(0).maxBodySize(0).ignoreContentType(true).ignoreHttpErrors(true).execute();
                 if (maxErrorTimes < 0) {
+                    logger.error("Error URL: {}, check that the URL is correct", reqUrl);
                     break;
                 }
                 if (res != null && (res.statusCode() == 404 || res.statusCode() == 504)) {
@@ -129,9 +138,15 @@ public class TedSpiderTransactionalHelpService {
                     languageDao.saveOrUpdateBasicInfo(languages);
                     return;
                 }
+            } catch (IOException e) {
+                logger.error("Timeout URL: {}, will retry after {} seconds", reqUrl, CONNECTION_TIME_OUT_MILLIS / 1000);
+                logger.error("Error message: {}, maxErrorTimes is left {}", e.getMessage(), --maxErrorTimes);
+                try {
+                    Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
+                } catch (InterruptedException e1) {
+                    logger.error(Arrays.toString(e1.getStackTrace()));
+                }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
     
@@ -147,11 +162,13 @@ public class TedSpiderTransactionalHelpService {
         headers.put("X-Requested-With", "XMLHttpRequest");
         
         Connection.Response res;
-        try {
-            int maxErrorTimes = MAX_ERROR_TIMES;
-            while (true) {
+        
+        int maxErrorTimes = MAX_ERROR_TIMES;
+        while (true) {
+            try {
                 res = Jsoup.connect(reqUrl).headers(headers).timeout(0).maxBodySize(0).ignoreContentType(true).ignoreHttpErrors(true).execute();
                 if (maxErrorTimes < 0) {
+                    logger.error("Error URL: {}, check that the URL is correct", reqUrl);
                     break;
                 }
                 if (res != null && (res.statusCode() == 404 || res.statusCode() == 504)) {
@@ -172,9 +189,15 @@ public class TedSpiderTransactionalHelpService {
                     topicDao.saveOrUpdate(topics);
                     return;
                 }
+            } catch (IOException e) {
+                logger.error("Timeout URL: {}, will retry after {} seconds", reqUrl, CONNECTION_TIME_OUT_MILLIS / 1000);
+                logger.error("Error message: {}, maxErrorTimes is left {}", e.getMessage(), --maxErrorTimes);
+                try {
+                    Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
+                } catch (InterruptedException e1) {
+                    logger.error(Arrays.toString(e1.getStackTrace()));
+                }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
     
@@ -186,7 +209,7 @@ public class TedSpiderTransactionalHelpService {
             final Integer lastPage = talksPageInfo.get("lastPage");
             
             for (int page = firstPage; page <= lastPage; page++) {
-                System.out.println("page = " + page + ", lastPage = " + lastPage);
+                logger.info("page = " + page + ", lastPage = " + lastPage);
                 Document doc = getTalksDoc(page);
                 Elements links;
                 if (doc != null) {
@@ -217,7 +240,7 @@ public class TedSpiderTransactionalHelpService {
     }
     
     private Document getTalksDoc(Integer page) {
-        final String reqURL = "https://www.ted.com/talks";
+        final String reqUrl = "https://www.ted.com/talks";
         final Map<String, String> headers = new HashMap<>();
         headers.put("Accept",
                 "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8");
@@ -227,19 +250,21 @@ public class TedSpiderTransactionalHelpService {
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36");
         headers.put("X-Requested-With", "XMLHttpRequest");
         
-        Connection connection = Jsoup.connect(reqURL).headers(headers).timeout(0).maxBodySize(0).ignoreHttpErrors(true);
+        Connection connection = Jsoup.connect(reqUrl).headers(headers).timeout(0).maxBodySize(0).ignoreHttpErrors(true);
         if (page != null) {
             // add ?page=xxx
             connection.data("page", String.valueOf(page));
         }
         
         Document doc;
-        try {
-            int maxErrorTimes = MAX_ERROR_TIMES;
-            while (true) {
-                Thread.sleep(SLEEP_TIME);
+        
+        int maxErrorTimes = MAX_ERROR_TIMES;
+        while (true) {
+            try {
+                Thread.sleep(NEXT_REQ_MILLIS);
                 Connection.Response res = connection.execute();
                 if (maxErrorTimes < 0) {
+                    logger.error("Error URL: {}, check that the URL is correct", reqUrl);
                     break;
                 }
                 if (res != null && (res.statusCode() == 404 || res.statusCode() == 504)) {
@@ -252,9 +277,15 @@ public class TedSpiderTransactionalHelpService {
                         return doc;
                     }
                 }
+            } catch (IOException | InterruptedException e) {
+                logger.error("Timeout URL: {}, will retry after {} seconds", reqUrl, CONNECTION_TIME_OUT_MILLIS / 1000);
+                logger.error("Error message: {}, maxErrorTimes is left {}", e.getMessage(), --maxErrorTimes);
+                try {
+                    Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
+                } catch (InterruptedException e1) {
+                    logger.error(Arrays.toString(e1.getStackTrace()));
+                }
             }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
         }
         return null;
     }

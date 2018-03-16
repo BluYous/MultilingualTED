@@ -1,5 +1,7 @@
 package com.bluyous.spider.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class TedSpiderServiceImpl implements TedSpiderService {
+    private static final Logger logger = LoggerFactory.getLogger(TedSpiderServiceImpl.class);
     private final TedSpiderTransactionalHelpService transactionalHelpService;
     
     @Autowired
@@ -23,15 +26,15 @@ public class TedSpiderServiceImpl implements TedSpiderService {
     
     @Transactional(propagation = Propagation.REQUIRED)
     public void runSpider() {
-        System.out.println("开始同步 Events");
+        logger.info("开始同步 Events");
         transactionalHelpService.synEvents();
-        System.out.println("开始同步 Languages");
+        logger.info("开始同步 Languages");
         transactionalHelpService.synLanguages();
-        System.out.println("开始同步 Topics");
+        logger.info("开始同步 Topics");
         transactionalHelpService.synTopics();
         
-        System.out.println("开始同步 Talks");
+        logger.info("开始同步 Talks");
         transactionalHelpService.synTalks();
-        System.out.println("同步完成");
+        logger.info("同步完成");
     }
 }

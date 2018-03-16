@@ -10,6 +10,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -24,8 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import static com.bluyous.spider.service.TedSpiderService.MAX_ERROR_TIMES;
-import static com.bluyous.spider.service.TedSpiderService.SLEEP_TIME;
+import static com.bluyous.spider.service.TedSpiderService.*;
 
 /**
  * @author BluYous
@@ -34,6 +35,7 @@ import static com.bluyous.spider.service.TedSpiderService.SLEEP_TIME;
  */
 @Service
 public class TedSpiderTransactionalHelp4TalkService {
+    private static final Logger logger = LoggerFactory.getLogger(TedSpiderTransactionalHelp4TalkService.class);
     private final LanguageDao languageDao;
     private final TalkDao talkDao;
     private final SpeakerDao speakerDao;
@@ -55,7 +57,7 @@ public class TedSpiderTransactionalHelp4TalkService {
     
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void synTalk(String talkUrl) {
-        System.out.println("talkUrl = " + talkUrl);
+        logger.info("开始获取 {} 的详细信息", talkUrl);
         JSONObject json = getTalkJson(talkUrl, null);
         
         Talk talk;
@@ -73,7 +75,7 @@ public class TedSpiderTransactionalHelp4TalkService {
             List<Language> languages = parseLanguageList(json);
             List<Resource> resources = parseResourceList(talk, speakers, languages);
             
-            System.out.println("开始存储数据：" + talkUrl);
+            logger.info("开始存储数据：" + talkUrl);
             speakerDao.saveOrUpdate(speakers);
             talkDao.saveOrUpdate(talk);
             talkDao.saveOrUpdateTalkSpeakerRef(TalkSpeakerRefList);
@@ -103,12 +105,14 @@ public class TedSpiderTransactionalHelp4TalkService {
         }
         
         Document doc;
-        try {
-            int maxErrorTimes = MAX_ERROR_TIMES;
-            while (true) {
-                Thread.sleep(SLEEP_TIME);
+        
+        int maxErrorTimes = MAX_ERROR_TIMES;
+        while (true) {
+            try {
+                Thread.sleep(NEXT_REQ_MILLIS);
                 Connection.Response res = connection.execute();
                 if (maxErrorTimes < 0) {
+                    logger.error("Error URL: {}, check that the URL is correct", talkReqUrl);
                     break;
                 }
                 if (res != null && (res.statusCode() == 404 || res.statusCode() == 504)) {
@@ -133,9 +137,15 @@ public class TedSpiderTransactionalHelp4TalkService {
                         }
                     }
                 }
+            } catch (IOException | InterruptedException e) {
+                logger.error("Timeout URL: {}, will retry after {} seconds", talkReqUrl, CONNECTION_TIME_OUT_MILLIS / 1000);
+                logger.error("Error message: {}, maxErrorTimes is left {}", e.getMessage(), --maxErrorTimes);
+                try {
+                    Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
+                } catch (InterruptedException e1) {
+                    logger.error(Arrays.toString(e1.getStackTrace()));
+                }
             }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
         }
         return null;
     }
@@ -152,7 +162,12 @@ public class TedSpiderTransactionalHelp4TalkService {
         final JSONObject playerTalksJson = talksJson.getJSONArray("player_talks").getJSONObject(0);
         
         final Integer viewedCount = talksJson.getInteger("viewed_count");
-        final Timestamp filmedDatetime = new Timestamp(playerTalksJson.getLong("filmed") * 1000);
+        final Timestamp filmedDatetime;
+        if (playerTalksJson.getLong("filmed") != null) {
+            filmedDatetime = new Timestamp(playerTalksJson.getLong("filmed") * 1000);
+        } else {
+            filmedDatetime = null;
+        }
         final Timestamp publishedDatetime = new Timestamp(playerTalksJson.getLong("published") * 1000);
         final Integer duration = playerTalksJson.getInteger("duration");
         final Float introDuration = playerTalksJson.getFloat("introDuration");
@@ -264,7 +279,11 @@ public class TedSpiderTransactionalHelp4TalkService {
     
     private List<TalkDownload> parseTalkDownloadList(Integer talkId, JSONObject json) {
         List<TalkDownload> talkDownloads = new ArrayList<>();
-        JSONObject talkDownloadsJson = json.getJSONObject("__INITIAL_DATA__").getJSONObject("media").getJSONObject("internal");
+        JSONObject mediaJson = json.getJSONObject("__INITIAL_DATA__").getJSONObject("media");
+        if (mediaJson == null) {
+            return talkDownloads;
+        }
+        JSONObject talkDownloadsJson = mediaJson.getJSONObject("internal");
         Set<String> downloadTypes = talkDownloadsJson.keySet();
         for (String downloadType : downloadTypes) {
             TalkDownload talkDownload = new TalkDownload();
@@ -282,7 +301,7 @@ public class TedSpiderTransactionalHelp4TalkService {
     }
     
     private List<TalkMultiLang> parseTalkMultiLangList(Integer talkId, JSONObject json, String talkUrl, String defaultLanguageCode) {
-        System.out.println("开始解析多语言");
+        logger.info("开始解析多语言");
         List<TalkMultiLang> talkMultiLangs = new ArrayList<>();
         
         JSONArray languagesJsonArray = json.getJSONObject("__INITIAL_DATA__").getJSONArray("talks").getJSONObject(0).getJSONArray("player_talks").getJSONObject(0).getJSONArray("languages");
@@ -365,28 +384,29 @@ public class TedSpiderTransactionalHelp4TalkService {
         List<Resource> resources = new ArrayList<>();
         for (Resource resourceForReq : resourceListForReq) {
             final String reqUrl = resourceForReq.getUrl();
-            System.out.println("开始下载：reqUrl = " + reqUrl);
+            logger.info("开始下载：reqUrl = " + reqUrl);
             String tag = resourceForReq.getTag();
             String lastModified = resourceForReq.getLastModified();
-            
-            try {
-                URL url = new URL(reqUrl);
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                httpURLConnection.setRequestProperty("Accept", "*/*");
-                httpURLConnection.setRequestProperty("Accept-Encoding", "gzip, deflate, br");
-                httpURLConnection.setRequestProperty("Referer", "https://www.ted.com/talks");
-                httpURLConnection.setRequestProperty("User-Agent",
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36");
-                if (tag != null) {
-                    httpURLConnection.setRequestProperty("If-None-Match", tag);
-                }
-                if (lastModified != null) {
-                    httpURLConnection.setRequestProperty("If-Modified-Since", lastModified);
-                }
-                
-                int maxErrorTimes = MAX_ERROR_TIMES;
-                while (true) {
+            int maxErrorTimes = MAX_ERROR_TIMES;
+            while (true) {
+                try {
+                    URL url = new URL(reqUrl);
+                    HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                    httpURLConnection.setRequestProperty("Accept", "*/*");
+                    httpURLConnection.setRequestProperty("Accept-Encoding", "gzip, deflate, br");
+                    httpURLConnection.setRequestProperty("Referer", "https://www.ted.com/talks");
+                    httpURLConnection.setRequestProperty("User-Agent",
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36");
+                    if (tag != null) {
+                        httpURLConnection.setRequestProperty("If-None-Match", tag);
+                    }
+                    if (lastModified != null) {
+                        httpURLConnection.setRequestProperty("If-Modified-Since", lastModified);
+                    }
+                    
+                    
                     if (maxErrorTimes < 0) {
+                        logger.error("Error URL: {}, check that the URL is correct", reqUrl);
                         break;
                     }
                     if (httpURLConnection.getResponseCode() == 404 || httpURLConnection.getResponseCode() == 504) {
@@ -425,9 +445,15 @@ public class TedSpiderTransactionalHelp4TalkService {
                         resources.add(resource);
                         break;
                     }
+                } catch (IOException e) {
+                    logger.error("Timeout URL: {}, will retry after {} seconds", reqUrl, CONNECTION_TIME_OUT_MILLIS / 1000);
+                    logger.error("Error message: {}, maxErrorTimes is left {}", e.getMessage(), --maxErrorTimes);
+                    try {
+                        Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
+                    } catch (InterruptedException e1) {
+                        logger.error(Arrays.toString(e1.getStackTrace()));
+                    }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
         return resources;
@@ -447,20 +473,20 @@ public class TedSpiderTransactionalHelp4TalkService {
             bos = new BufferedOutputStream(fos);
             bos.write(buf);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(Arrays.toString(e.getStackTrace()));
         } finally {
             if (bos != null) {
                 try {
                     bos.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error(Arrays.toString(e.getStackTrace()));
                 }
             }
             if (fos != null) {
                 try {
                     fos.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error(Arrays.toString(e.getStackTrace()));
                 }
             }
         }
@@ -498,7 +524,7 @@ public class TedSpiderTransactionalHelp4TalkService {
     //         final Integer talkId = toSynSubtitle.getTalkId();
     //         final String languageCode = toSynSubtitle.getLanguageCode();
     //         try {
-    //             Thread.sleep(SLEEP_TIME);
+    //             Thread.sleep(NEXT_REQ_MILLIS);
     //         } catch (InterruptedException e) {
     //             e.printStackTrace();
     //         }

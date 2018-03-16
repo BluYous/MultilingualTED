@@ -2,7 +2,7 @@ DROP TABLE IF EXISTS resource;
 
 CREATE TABLE resource (
   url             VARCHAR(255) NOT NULL,
-  file_path       VARCHAR(60),
+  file_path       VARCHAR(80),
   file_name       VARCHAR(60),
   content_length  INT(11),
   content_type    VARCHAR(30),
