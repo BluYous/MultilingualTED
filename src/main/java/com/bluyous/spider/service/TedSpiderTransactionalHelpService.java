@@ -65,7 +65,7 @@ public class TedSpiderTransactionalHelpService {
         int maxErrorTimes = MAX_ERROR_TIMES;
         while (true) {
             try {
-                res = Jsoup.connect(reqUrl).headers(headers).timeout(0).maxBodySize(0).ignoreContentType(true).ignoreHttpErrors(true).execute();
+                res = Jsoup.connect(reqUrl).headers(headers).timeout(CONNECTION_TIME_OUT_SECONDS * 1000).maxBodySize(0).ignoreContentType(true).ignoreHttpErrors(true).execute();
                 if (maxErrorTimes < 0) {
                     logger.error("Error URL: {}, check that the URL is correct", reqUrl);
                     break;
@@ -91,10 +91,10 @@ public class TedSpiderTransactionalHelpService {
                     return;
                 }
             } catch (IOException e) {
-                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, CONNECTION_TIME_OUT_MILLIS / 1000);
+                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
                 logger.error("Error stack trace: ", e);
                 try {
-                    Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
+                    Thread.sleep(RECONNECT_MILLIS);
                 } catch (InterruptedException e1) {
                     logger.error("Error stack trace: ", e1);
                 }
@@ -118,7 +118,7 @@ public class TedSpiderTransactionalHelpService {
         int maxErrorTimes = MAX_ERROR_TIMES;
         while (true) {
             try {
-                res = Jsoup.connect(reqUrl).headers(headers).timeout(0).maxBodySize(0).ignoreContentType(true).ignoreHttpErrors(true).execute();
+                res = Jsoup.connect(reqUrl).headers(headers).timeout(CONNECTION_TIME_OUT_SECONDS * 1000).maxBodySize(0).ignoreContentType(true).ignoreHttpErrors(true).execute();
                 if (maxErrorTimes < 0) {
                     logger.error("Error URL: {}, check that the URL is correct", reqUrl);
                     break;
@@ -142,10 +142,10 @@ public class TedSpiderTransactionalHelpService {
                     return;
                 }
             } catch (IOException e) {
-                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, CONNECTION_TIME_OUT_MILLIS / 1000);
+                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
                 logger.error("Error stack trace: ", e);
                 try {
-                    Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
+                    Thread.sleep(RECONNECT_MILLIS);
                 } catch (InterruptedException e1) {
                     logger.error("Error stack trace: ", e1);
                 }
@@ -169,7 +169,7 @@ public class TedSpiderTransactionalHelpService {
         int maxErrorTimes = MAX_ERROR_TIMES;
         while (true) {
             try {
-                res = Jsoup.connect(reqUrl).headers(headers).timeout(0).maxBodySize(0).ignoreContentType(true).ignoreHttpErrors(true).execute();
+                res = Jsoup.connect(reqUrl).headers(headers).timeout(CONNECTION_TIME_OUT_SECONDS * 1000).maxBodySize(0).ignoreContentType(true).ignoreHttpErrors(true).execute();
                 if (maxErrorTimes < 0) {
                     logger.error("Error URL: {}, check that the URL is correct", reqUrl);
                     break;
@@ -193,10 +193,10 @@ public class TedSpiderTransactionalHelpService {
                     return;
                 }
             } catch (IOException e) {
-                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, CONNECTION_TIME_OUT_MILLIS / 1000);
+                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
                 logger.error("Error stack trace: ", e);
                 try {
-                    Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
+                    Thread.sleep(RECONNECT_MILLIS);
                 } catch (InterruptedException e1) {
                     logger.error("Error stack trace: ", e1);
                 }
@@ -253,7 +253,7 @@ public class TedSpiderTransactionalHelpService {
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36");
         headers.put("X-Requested-With", "XMLHttpRequest");
         
-        Connection connection = Jsoup.connect(reqUrl).headers(headers).timeout(0).maxBodySize(0).ignoreHttpErrors(true);
+        Connection connection = Jsoup.connect(reqUrl).headers(headers).timeout(CONNECTION_TIME_OUT_SECONDS * 1000).maxBodySize(0).ignoreHttpErrors(true);
         if (page != null) {
             // add ?page=xxx
             connection.data("page", String.valueOf(page));
@@ -281,10 +281,10 @@ public class TedSpiderTransactionalHelpService {
                     }
                 }
             } catch (IOException | InterruptedException e) {
-                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, CONNECTION_TIME_OUT_MILLIS / 1000);
+                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
                 logger.error("Error stack trace: ", e);
                 try {
-                    Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
+                    Thread.sleep(RECONNECT_MILLIS);
                 } catch (InterruptedException e1) {
                     logger.error("Error stack trace: ", e1);
                 }

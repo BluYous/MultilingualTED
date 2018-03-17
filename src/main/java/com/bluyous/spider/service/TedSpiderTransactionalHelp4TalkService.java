@@ -99,7 +99,7 @@ public class TedSpiderTransactionalHelp4TalkService {
         headers.put("User-Agent",
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36");
         headers.put("Upgrade-Insecure-Requests", "1");
-        Connection connection = Jsoup.connect(talkReqUrl).headers(headers).timeout(0).maxBodySize(0).ignoreHttpErrors(true);
+        Connection connection = Jsoup.connect(talkReqUrl).headers(headers).timeout(CONNECTION_TIME_OUT_SECONDS * 1000).maxBodySize(0).ignoreHttpErrors(true);
         if (languageCode != null) {
             connection.data("language", languageCode);
         }
@@ -138,10 +138,10 @@ public class TedSpiderTransactionalHelp4TalkService {
                     }
                 }
             } catch (IOException | InterruptedException e) {
-                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", talkReqUrl, --maxErrorTimes, CONNECTION_TIME_OUT_MILLIS / 1000);
+                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", talkReqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
                 logger.error("Error stack trace: ", e);
                 try {
-                    Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
+                    Thread.sleep(RECONNECT_MILLIS);
                 } catch (InterruptedException e1) {
                     logger.error("Error stack trace: ", e1);
                 }
@@ -392,6 +392,8 @@ public class TedSpiderTransactionalHelp4TalkService {
                 try {
                     URL url = new URL(reqUrl);
                     HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                    httpURLConnection.setConnectTimeout(CONNECTION_TIME_OUT_SECONDS * 1000);
+                    httpURLConnection.setReadTimeout(CONNECTION_TIME_OUT_SECONDS * 1000);
                     httpURLConnection.setRequestProperty("Accept", "*/*");
                     httpURLConnection.setRequestProperty("Accept-Encoding", "gzip, deflate, br");
                     httpURLConnection.setRequestProperty("Referer", "https://www.ted.com/talks");
@@ -446,10 +448,10 @@ public class TedSpiderTransactionalHelp4TalkService {
                         break;
                     }
                 } catch (IOException e) {
-                    logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, CONNECTION_TIME_OUT_MILLIS / 1000);
+                    logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
                     logger.error("Error stack trace: ", e);
                     try {
-                        Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
+                        Thread.sleep(RECONNECT_MILLIS);
                     } catch (InterruptedException e1) {
                         logger.error("Error stack trace: ", e1);
                     }
