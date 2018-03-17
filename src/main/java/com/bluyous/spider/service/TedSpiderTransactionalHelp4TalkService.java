@@ -428,8 +428,8 @@ public class TedSpiderTransactionalHelp4TalkService {
                         
                         Integer contentLength = Integer.valueOf(httpURLConnection.getHeaderField("Content-Length"));
                         String contentType = httpURLConnection.getHeaderField("Content-Type");
-                        tag = httpURLConnection.getHeaderField("ETag");
-                        lastModified = httpURLConnection.getHeaderField("Last-Modified");
+                        String newTag = httpURLConnection.getHeaderField("ETag");
+                        String newLastModified = httpURLConnection.getHeaderField("Last-Modified");
                         byte[] bytes = parseBytes(httpURLConnection);
                         
                         
@@ -439,8 +439,8 @@ public class TedSpiderTransactionalHelp4TalkService {
                         resource.setFileName(fileName);
                         resource.setContentLength(contentLength);
                         resource.setContentType(contentType);
-                        resource.setTag(tag);
-                        resource.setLastModified(lastModified);
+                        resource.setTag(newTag);
+                        resource.setLastModified(newLastModified);
                         resource.setBytes(bytes);
                         resources.add(resource);
                         break;
