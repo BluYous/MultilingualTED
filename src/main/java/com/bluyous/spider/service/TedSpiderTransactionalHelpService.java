@@ -22,7 +22,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.bluyous.spider.service.TedSpiderService.*;
 
@@ -88,12 +91,12 @@ public class TedSpiderTransactionalHelpService {
                     return;
                 }
             } catch (IOException e) {
-                logger.error("Timeout URL: {}, will retry after {} seconds", reqUrl, CONNECTION_TIME_OUT_MILLIS / 1000);
-                logger.error("Error message: {}, maxErrorTimes is left {}", e.getMessage(), --maxErrorTimes);
+                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, CONNECTION_TIME_OUT_MILLIS / 1000);
+                logger.error("Error stack trace: ", e);
                 try {
                     Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
                 } catch (InterruptedException e1) {
-                    logger.error(Arrays.toString(e1.getStackTrace()));
+                    logger.error("Error stack trace: ", e1);
                 }
             }
         }
@@ -139,12 +142,12 @@ public class TedSpiderTransactionalHelpService {
                     return;
                 }
             } catch (IOException e) {
-                logger.error("Timeout URL: {}, will retry after {} seconds", reqUrl, CONNECTION_TIME_OUT_MILLIS / 1000);
-                logger.error("Error message: {}, maxErrorTimes is left {}", e.getMessage(), --maxErrorTimes);
+                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, CONNECTION_TIME_OUT_MILLIS / 1000);
+                logger.error("Error stack trace: ", e);
                 try {
                     Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
                 } catch (InterruptedException e1) {
-                    logger.error(Arrays.toString(e1.getStackTrace()));
+                    logger.error("Error stack trace: ", e1);
                 }
             }
         }
@@ -190,12 +193,12 @@ public class TedSpiderTransactionalHelpService {
                     return;
                 }
             } catch (IOException e) {
-                logger.error("Timeout URL: {}, will retry after {} seconds", reqUrl, CONNECTION_TIME_OUT_MILLIS / 1000);
-                logger.error("Error message: {}, maxErrorTimes is left {}", e.getMessage(), --maxErrorTimes);
+                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, CONNECTION_TIME_OUT_MILLIS / 1000);
+                logger.error("Error stack trace: ", e);
                 try {
                     Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
                 } catch (InterruptedException e1) {
-                    logger.error(Arrays.toString(e1.getStackTrace()));
+                    logger.error("Error stack trace: ", e1);
                 }
             }
         }
@@ -278,12 +281,12 @@ public class TedSpiderTransactionalHelpService {
                     }
                 }
             } catch (IOException | InterruptedException e) {
-                logger.error("Timeout URL: {}, will retry after {} seconds", reqUrl, CONNECTION_TIME_OUT_MILLIS / 1000);
-                logger.error("Error message: {}, maxErrorTimes is left {}", e.getMessage(), --maxErrorTimes);
+                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, CONNECTION_TIME_OUT_MILLIS / 1000);
+                logger.error("Error stack trace: ", e);
                 try {
                     Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
                 } catch (InterruptedException e1) {
-                    logger.error(Arrays.toString(e1.getStackTrace()));
+                    logger.error("Error stack trace: ", e1);
                 }
             }
         }

@@ -138,12 +138,12 @@ public class TedSpiderTransactionalHelp4TalkService {
                     }
                 }
             } catch (IOException | InterruptedException e) {
-                logger.error("Timeout URL: {}, will retry after {} seconds", talkReqUrl, CONNECTION_TIME_OUT_MILLIS / 1000);
-                logger.error("Error message: {}, maxErrorTimes is left {}", e.getMessage(), --maxErrorTimes);
+                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", talkReqUrl, --maxErrorTimes, CONNECTION_TIME_OUT_MILLIS / 1000);
+                logger.error("Error stack trace: ", e);
                 try {
                     Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
                 } catch (InterruptedException e1) {
-                    logger.error(Arrays.toString(e1.getStackTrace()));
+                    logger.error("Error stack trace: ", e1);
                 }
             }
         }
@@ -446,12 +446,12 @@ public class TedSpiderTransactionalHelp4TalkService {
                         break;
                     }
                 } catch (IOException e) {
-                    logger.error("Timeout URL: {}, will retry after {} seconds", reqUrl, CONNECTION_TIME_OUT_MILLIS / 1000);
-                    logger.error("Error message: {}, maxErrorTimes is left {}", e.getMessage(), --maxErrorTimes);
+                    logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, CONNECTION_TIME_OUT_MILLIS / 1000);
+                    logger.error("Error stack trace: ", e);
                     try {
                         Thread.sleep(CONNECTION_TIME_OUT_MILLIS);
                     } catch (InterruptedException e1) {
-                        logger.error(Arrays.toString(e1.getStackTrace()));
+                        logger.error("Error stack trace: ", e1);
                     }
                 }
             }
@@ -473,20 +473,20 @@ public class TedSpiderTransactionalHelp4TalkService {
             bos = new BufferedOutputStream(fos);
             bos.write(buf);
         } catch (Exception e) {
-            logger.error(Arrays.toString(e.getStackTrace()));
+            logger.error("Error stack trace: ", e);
         } finally {
             if (bos != null) {
                 try {
                     bos.close();
                 } catch (IOException e) {
-                    logger.error(Arrays.toString(e.getStackTrace()));
+                    logger.error("Error stack trace: ", e);
                 }
             }
             if (fos != null) {
                 try {
                     fos.close();
                 } catch (IOException e) {
-                    logger.error(Arrays.toString(e.getStackTrace()));
+                    logger.error("Error stack trace: ", e);
                 }
             }
         }
