@@ -9,7 +9,7 @@ CREATE TABLE speaker (
   photo_url       VARCHAR(255),
   photo_slug      VARCHAR(60),
   what_others_say VARCHAR(1000),
-  who_they_are    VARCHAR(255),
+  who_they_are    VARCHAR(500),
   why_listen      TEXT,
   title           VARCHAR(255),
   middle_initial  VARCHAR(255),

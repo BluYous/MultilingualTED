@@ -66,7 +66,7 @@ public class TedSpiderTransactionalHelpService {
         while (true) {
             try {
                 res = Jsoup.connect(reqUrl).headers(headers).timeout(CONNECTION_TIME_OUT_SECONDS * 1000).maxBodySize(0).ignoreContentType(true).ignoreHttpErrors(true).execute();
-                if (maxErrorTimes < 0) {
+                if (maxErrorTimes <= 0) {
                     logger.error("Error URL: {}, check that the URL is correct", reqUrl);
                     break;
                 }
@@ -119,7 +119,7 @@ public class TedSpiderTransactionalHelpService {
         while (true) {
             try {
                 res = Jsoup.connect(reqUrl).headers(headers).timeout(CONNECTION_TIME_OUT_SECONDS * 1000).maxBodySize(0).ignoreContentType(true).ignoreHttpErrors(true).execute();
-                if (maxErrorTimes < 0) {
+                if (maxErrorTimes <= 0) {
                     logger.error("Error URL: {}, check that the URL is correct", reqUrl);
                     break;
                 }
@@ -170,7 +170,7 @@ public class TedSpiderTransactionalHelpService {
         while (true) {
             try {
                 res = Jsoup.connect(reqUrl).headers(headers).timeout(CONNECTION_TIME_OUT_SECONDS * 1000).maxBodySize(0).ignoreContentType(true).ignoreHttpErrors(true).execute();
-                if (maxErrorTimes < 0) {
+                if (maxErrorTimes <= 0) {
                     logger.error("Error URL: {}, check that the URL is correct", reqUrl);
                     break;
                 }
@@ -266,7 +266,7 @@ public class TedSpiderTransactionalHelpService {
             try {
                 Thread.sleep(NEXT_REQ_MILLIS);
                 Connection.Response res = connection.execute();
-                if (maxErrorTimes < 0) {
+                if (maxErrorTimes <= 0) {
                     logger.error("Error URL: {}, check that the URL is correct", reqUrl);
                     break;
                 }

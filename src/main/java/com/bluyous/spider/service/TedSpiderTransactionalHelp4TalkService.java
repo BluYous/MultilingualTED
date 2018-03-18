@@ -111,7 +111,7 @@ public class TedSpiderTransactionalHelp4TalkService {
             try {
                 Thread.sleep(NEXT_REQ_MILLIS);
                 Connection.Response res = connection.execute();
-                if (maxErrorTimes < 0) {
+                if (maxErrorTimes <= 0) {
                     logger.error("Error URL: {}, check that the URL is correct", talkReqUrl);
                     break;
                 }
@@ -179,7 +179,7 @@ public class TedSpiderTransactionalHelp4TalkService {
         final String thumbImgUrl = talksJson.getString("hero");
         
         String thumbImgSlug = null;
-        Pattern pattern = Pattern.compile("^https://pe.tedcdn.com/images/ted/(.*)$");
+        Pattern pattern = Pattern.compile("^https://[^/]+(?:/.*)/(.*)$");
         Matcher matcher = pattern.matcher(thumbImgUrl);
         if (matcher.find()) {
             thumbImgSlug = matcher.group(1);
@@ -407,7 +407,7 @@ public class TedSpiderTransactionalHelp4TalkService {
                     }
                     
                     
-                    if (maxErrorTimes < 0) {
+                    if (maxErrorTimes <= 0) {
                         logger.error("Error URL: {}, check that the URL is correct", reqUrl);
                         break;
                     }
