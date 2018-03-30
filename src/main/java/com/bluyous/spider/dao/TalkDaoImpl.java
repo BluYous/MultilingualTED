@@ -109,4 +109,14 @@ public class TalkDaoImpl implements TalkDao {
         }
         namedParameterJdbcTemplate.batchUpdate(sql.toString(), sqlParameterSources);
     }
+    
+    @Override
+    public Integer getTalkNum() {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT count(*)\n");
+        sql.append("FROM talk;\n");
+        
+        Integer talkNum = jdbcTemplate.queryForObject(sql.toString(), Integer.class);
+        return talkNum;
+    }
 }

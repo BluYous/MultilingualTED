@@ -20,4 +20,5 @@ public interface TalkDao {
     
     void saveOrUpdateTalkMultiLang(List<TalkMultiLang> talkMultiLangs);
     
+    Integer getTalkNum();
 }

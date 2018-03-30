@@ -1,10 +1,11 @@
 package com.bluyous.spider.controller;
 
+import com.bluyous.spider.service.ApiService;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,12 +16,18 @@ import java.util.Map;
 @CrossOrigin
 @RestController
 public class ApiController {
-    @GetMapping("/api")
-    public Map<String, String> test() {
-        HashMap<String, String> map = new HashMap<>();
-        map.put("name", "kobe");
-        map.put("age", "18");
-        map.put("address", "四川");
-        return map;
+    private final ApiService apiService;
+    
+    public ApiController(ApiService apiService) {
+        this.apiService = apiService;
+    }
+    
+    @GetMapping("/api/talksNum")
+    public Integer getTalksNum() {
+        return apiService.getTalksNum();
+    }
+    @GetMapping("/api/topTopics")
+    public List<Map<String, Object>> getTopTopics() {
+        return apiService.getTopTopics();
     }
 }
