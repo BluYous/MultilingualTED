@@ -4,54 +4,57 @@ import {ajaxAddress} from "../../common";
 import {message, Select, Spin} from 'antd';
 import {PubSub} from 'pubsub-js';
 
-class TopicFilter extends Component {
+class EventFilter extends Component {
     constructor(props) {
         super(props);
         this.state = {
             isLoaded: false,
-            topics: [],
+            events: [],
         }
     }
     
     handleChange = (value) => {
-        PubSub.publish('topicsFilter', value);
+        PubSub.publish('eventFilter', value);
     };
     
     handleFocus = (value) => {
         let {isLoaded} = this.state;
         if (!isLoaded) {
-            axios.get(ajaxAddress + "/topics")
+            axios.get(ajaxAddress + "/events")
                 .then(res => {
-                    let topics = res.data;
+                    let events = res.data;
                     this.setState({
                         isLoaded: true,
-                        topics,
+                        events,
                     })
                 })
                 .catch(e => {
-                    message.error('Fail to load topics');
+                    message.error('Fail to load events');
                 });
         }
     };
     
     render() {
-        let {topics, isLoaded} = this.state;
+        let {events, isLoaded} = this.state;
         return (
             <Select
+                showSearch
                 allowClear={true}
-                mode="multiple"
                 style={{width: '100%'}}
-                placeholder="Topics"
+                placeholder="Events"
+                optionFilterProp="children"
                 notFoundContent={!isLoaded ? <Spin size="default"/> : null}
                 onChange={this.handleChange}
                 onFocus={this.handleFocus}
-                maxTagCount={3}
             >
                 {
-                    topics.map((item, index) => {
+                    events.map((item, index) => {
                         return (
-                            <Select.Option key={item.topic_id} title={`${item.count} talk(s)`}>
-                                {item.label}
+                            <Select.Option
+                                key={item.event_label}
+                                title={`${item.count} talk(s)`}
+                            >
+                                {item.event_label}
                             </Select.Option>
                         )
                     })
@@ -61,4 +64,4 @@ class TopicFilter extends Component {
     }
 }
 
-export default TopicFilter;
+export default EventFilter;

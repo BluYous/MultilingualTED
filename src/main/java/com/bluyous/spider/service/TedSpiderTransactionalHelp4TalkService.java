@@ -5,13 +5,12 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.bluyous.spider.bean.*;
 import com.bluyous.spider.dao.*;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -21,6 +20,8 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,8 +35,9 @@ import static com.bluyous.spider.service.TedSpiderService.*;
  * @since 2018-03-01
  */
 @Service
+@Slf4j
 public class TedSpiderTransactionalHelp4TalkService {
-    private static final Logger logger = LoggerFactory.getLogger(TedSpiderTransactionalHelp4TalkService.class);
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
     private final LanguageDao languageDao;
     private final TalkDao talkDao;
     private final SpeakerDao speakerDao;
@@ -57,7 +59,7 @@ public class TedSpiderTransactionalHelp4TalkService {
     
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void synTalk(String talkUrl) {
-        logger.info("开始获取 {} 的详细信息", talkUrl);
+        log.info("开始获取 {} 的详细信息", talkUrl);
         JSONObject json = getTalkJson(talkUrl, null);
         
         Talk talk;
@@ -75,7 +77,7 @@ public class TedSpiderTransactionalHelp4TalkService {
             List<Language> languages = parseLanguageList(json);
             List<Resource> resources = parseResourceList(talk, speakers, languages);
             
-            logger.info("开始存储数据：" + talkUrl);
+            log.info("开始存储数据：" + talkUrl);
             speakerDao.saveOrUpdate(speakers);
             talkDao.saveOrUpdate(talk);
             talkDao.saveOrUpdateTalkSpeakerRef(TalkSpeakerRefList);
@@ -112,7 +114,7 @@ public class TedSpiderTransactionalHelp4TalkService {
                 Thread.sleep(NEXT_REQ_MILLIS);
                 Connection.Response res = connection.execute();
                 if (maxErrorTimes <= 0) {
-                    logger.error("Error URL: {}, check that the URL is correct", talkReqUrl);
+                    log.error("Error URL: {}, check that the URL is correct", talkReqUrl);
                     break;
                 }
                 if (res != null && (res.statusCode() == 404 || res.statusCode() == 504)) {
@@ -138,12 +140,12 @@ public class TedSpiderTransactionalHelp4TalkService {
                     }
                 }
             } catch (IOException | InterruptedException e) {
-                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", talkReqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
-                logger.error("Error stack trace: ", e);
+                log.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", talkReqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
+                log.error("Error stack trace: ", e);
                 try {
                     Thread.sleep(RECONNECT_MILLIS);
                 } catch (InterruptedException e1) {
-                    logger.error("Error stack trace: ", e1);
+                    log.error("Error stack trace: ", e1);
                 }
             }
         }
@@ -162,11 +164,13 @@ public class TedSpiderTransactionalHelp4TalkService {
         final JSONObject playerTalksJson = talksJson.getJSONArray("player_talks").getJSONObject(0);
         
         final Integer viewedCount = talksJson.getInteger("viewed_count");
-        final Timestamp filmedDatetime;
-        if (playerTalksJson.getLong("filmed") != null) {
-            filmedDatetime = new Timestamp(playerTalksJson.getLong("filmed") * 1000);
-        } else {
-            filmedDatetime = null;
+        java.sql.Date recordedAt = null;
+        String recordedAtStr = talksJson.getString("recorded_at");
+        try {
+            recordedAt = new java.sql.Date(DATE_FORMAT.parse(recordedAtStr).getTime());
+        } catch (ParseException e) {
+            log.error("Error when parse {} to sql.Date", recordedAtStr);
+            log.error("Error stack trace: ", e);
         }
         final Timestamp publishedDatetime = new Timestamp(playerTalksJson.getLong("published") * 1000);
         final Integer duration = playerTalksJson.getInteger("duration");
@@ -191,7 +195,7 @@ public class TedSpiderTransactionalHelp4TalkService {
         talk.setTalkSlug(talkSlug);
         talk.setTalkDefaultLanguageCode(talkDefaultLanguageCode);
         talk.setViewedCount(viewedCount);
-        talk.setFilmedDatetime(filmedDatetime);
+        talk.setRecordedAt(recordedAt);
         talk.setPublishedDatetime(publishedDatetime);
         talk.setDuration(duration);
         talk.setIntroDuration(introDuration);
@@ -301,7 +305,7 @@ public class TedSpiderTransactionalHelp4TalkService {
     }
     
     private List<TalkMultiLang> parseTalkMultiLangList(Integer talkId, JSONObject json, String talkUrl, String defaultLanguageCode) {
-        logger.info("开始解析多语言");
+        log.info("开始解析多语言");
         List<TalkMultiLang> talkMultiLangs = new ArrayList<>();
         
         JSONArray languagesJsonArray = json.getJSONObject("__INITIAL_DATA__").getJSONArray("talks").getJSONObject(0).getJSONArray("player_talks").getJSONObject(0).getJSONArray("languages");
@@ -384,7 +388,7 @@ public class TedSpiderTransactionalHelp4TalkService {
         List<Resource> resources = new ArrayList<>();
         for (Resource resourceForReq : resourceListForReq) {
             final String reqUrl = resourceForReq.getUrl();
-            logger.info("开始下载：reqUrl = " + reqUrl);
+            log.info("开始下载：reqUrl = " + reqUrl);
             String tag = resourceForReq.getTag();
             String lastModified = resourceForReq.getLastModified();
             int maxErrorTimes = MAX_ERROR_TIMES;
@@ -408,7 +412,7 @@ public class TedSpiderTransactionalHelp4TalkService {
                     
                     
                     if (maxErrorTimes <= 0) {
-                        logger.error("Error URL: {}, check that the URL is correct", reqUrl);
+                        log.error("Error URL: {}, check that the URL is correct", reqUrl);
                         break;
                     }
                     if (httpURLConnection.getResponseCode() == 404 || httpURLConnection.getResponseCode() == 504) {
@@ -448,12 +452,12 @@ public class TedSpiderTransactionalHelp4TalkService {
                         break;
                     }
                 } catch (IOException e) {
-                    logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
-                    logger.error("Error stack trace: ", e);
+                    log.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
+                    log.error("Error stack trace: ", e);
                     try {
                         Thread.sleep(RECONNECT_MILLIS);
                     } catch (InterruptedException e1) {
-                        logger.error("Error stack trace: ", e1);
+                        log.error("Error stack trace: ", e1);
                     }
                 }
             }
@@ -475,20 +479,20 @@ public class TedSpiderTransactionalHelp4TalkService {
             bos = new BufferedOutputStream(fos);
             bos.write(buf);
         } catch (Exception e) {
-            logger.error("Error stack trace: ", e);
+            log.error("Error stack trace: ", e);
         } finally {
             if (bos != null) {
                 try {
                     bos.close();
                 } catch (IOException e) {
-                    logger.error("Error stack trace: ", e);
+                    log.error("Error stack trace: ", e);
                 }
             }
             if (fos != null) {
                 try {
                     fos.close();
                 } catch (IOException e) {
-                    logger.error("Error stack trace: ", e);
+                    log.error("Error stack trace: ", e);
                 }
             }
         }

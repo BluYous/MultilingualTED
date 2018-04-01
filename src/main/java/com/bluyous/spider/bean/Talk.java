@@ -1,5 +1,6 @@
 package com.bluyous.spider.bean;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 
 /**
@@ -13,7 +14,7 @@ public class Talk {
     private String talkSlug;
     private String talkDefaultLanguageCode;
     private Integer viewedCount;
-    private Timestamp filmedDatetime;
+    private java.sql.Date recordedAt;
     private Timestamp publishedDatetime;
     private Integer duration;
     private Float introDuration;
@@ -34,7 +35,7 @@ public class Talk {
                 ", talkSlug='" + talkSlug + '\'' +
                 ", talkDefaultLanguageCode='" + talkDefaultLanguageCode + '\'' +
                 ", viewedCount=" + viewedCount +
-                ", filmedDatetime=" + filmedDatetime +
+                ", recordedAt=" + recordedAt +
                 ", publishedDatetime=" + publishedDatetime +
                 ", duration=" + duration +
                 ", introDuration=" + introDuration +
@@ -89,12 +90,12 @@ public class Talk {
         this.viewedCount = viewedCount;
     }
     
-    public Timestamp getFilmedDatetime() {
-        return filmedDatetime;
+    public Date getRecordedAt() {
+        return recordedAt;
     }
     
-    public void setFilmedDatetime(Timestamp filmedDatetime) {
-        this.filmedDatetime = filmedDatetime;
+    public void setRecordedAt(Date recordedAt) {
+        this.recordedAt = recordedAt;
     }
     
     public Timestamp getPublishedDatetime() {

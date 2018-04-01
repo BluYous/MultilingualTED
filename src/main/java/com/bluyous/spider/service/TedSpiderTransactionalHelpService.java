@@ -9,13 +9,12 @@ import com.bluyous.spider.bean.Topic;
 import com.bluyous.spider.dao.EventDao;
 import com.bluyous.spider.dao.LanguageDao;
 import com.bluyous.spider.dao.TopicDao;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -35,8 +34,8 @@ import static com.bluyous.spider.service.TedSpiderService.*;
  * @since 2018-03-01
  */
 @Service
+@Slf4j
 public class TedSpiderTransactionalHelpService {
-    private static final Logger logger = LoggerFactory.getLogger(TedSpiderTransactionalHelpService.class);
     private final EventDao eventDao;
     private final LanguageDao languageDao;
     private final TopicDao topicDao;
@@ -67,7 +66,7 @@ public class TedSpiderTransactionalHelpService {
             try {
                 res = Jsoup.connect(reqUrl).headers(headers).timeout(CONNECTION_TIME_OUT_SECONDS * 1000).maxBodySize(0).ignoreContentType(true).ignoreHttpErrors(true).execute();
                 if (maxErrorTimes <= 0) {
-                    logger.error("Error URL: {}, check that the URL is correct", reqUrl);
+                    log.error("Error URL: {}, check that the URL is correct", reqUrl);
                     break;
                 }
                 if (res != null && (res.statusCode() == 404 || res.statusCode() == 504)) {
@@ -91,12 +90,12 @@ public class TedSpiderTransactionalHelpService {
                     return;
                 }
             } catch (IOException e) {
-                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
-                logger.error("Error stack trace: ", e);
+                log.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
+                log.error("Error stack trace: ", e);
                 try {
                     Thread.sleep(RECONNECT_MILLIS);
                 } catch (InterruptedException e1) {
-                    logger.error("Error stack trace: ", e1);
+                    log.error("Error stack trace: ", e1);
                 }
             }
         }
@@ -120,7 +119,7 @@ public class TedSpiderTransactionalHelpService {
             try {
                 res = Jsoup.connect(reqUrl).headers(headers).timeout(CONNECTION_TIME_OUT_SECONDS * 1000).maxBodySize(0).ignoreContentType(true).ignoreHttpErrors(true).execute();
                 if (maxErrorTimes <= 0) {
-                    logger.error("Error URL: {}, check that the URL is correct", reqUrl);
+                    log.error("Error URL: {}, check that the URL is correct", reqUrl);
                     break;
                 }
                 if (res != null && (res.statusCode() == 404 || res.statusCode() == 504)) {
@@ -142,12 +141,12 @@ public class TedSpiderTransactionalHelpService {
                     return;
                 }
             } catch (IOException e) {
-                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
-                logger.error("Error stack trace: ", e);
+                log.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
+                log.error("Error stack trace: ", e);
                 try {
                     Thread.sleep(RECONNECT_MILLIS);
                 } catch (InterruptedException e1) {
-                    logger.error("Error stack trace: ", e1);
+                    log.error("Error stack trace: ", e1);
                 }
             }
         }
@@ -171,7 +170,7 @@ public class TedSpiderTransactionalHelpService {
             try {
                 res = Jsoup.connect(reqUrl).headers(headers).timeout(CONNECTION_TIME_OUT_SECONDS * 1000).maxBodySize(0).ignoreContentType(true).ignoreHttpErrors(true).execute();
                 if (maxErrorTimes <= 0) {
-                    logger.error("Error URL: {}, check that the URL is correct", reqUrl);
+                    log.error("Error URL: {}, check that the URL is correct", reqUrl);
                     break;
                 }
                 if (res != null && (res.statusCode() == 404 || res.statusCode() == 504)) {
@@ -193,12 +192,12 @@ public class TedSpiderTransactionalHelpService {
                     return;
                 }
             } catch (IOException e) {
-                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
-                logger.error("Error stack trace: ", e);
+                log.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
+                log.error("Error stack trace: ", e);
                 try {
                     Thread.sleep(RECONNECT_MILLIS);
                 } catch (InterruptedException e1) {
-                    logger.error("Error stack trace: ", e1);
+                    log.error("Error stack trace: ", e1);
                 }
             }
         }
@@ -212,7 +211,7 @@ public class TedSpiderTransactionalHelpService {
             final Integer lastPage = talksPageInfo.get("lastPage");
             
             for (int page = firstPage; page <= lastPage; page++) {
-                logger.info("page = " + page + ", lastPage = " + lastPage);
+                log.info("page = " + page + ", lastPage = " + lastPage);
                 Document doc = getTalksDoc(page);
                 Elements links;
                 if (doc != null) {
@@ -267,7 +266,7 @@ public class TedSpiderTransactionalHelpService {
                 Thread.sleep(NEXT_REQ_MILLIS);
                 Connection.Response res = connection.execute();
                 if (maxErrorTimes <= 0) {
-                    logger.error("Error URL: {}, check that the URL is correct", reqUrl);
+                    log.error("Error URL: {}, check that the URL is correct", reqUrl);
                     break;
                 }
                 if (res != null && (res.statusCode() == 404 || res.statusCode() == 504)) {
@@ -281,12 +280,12 @@ public class TedSpiderTransactionalHelpService {
                     }
                 }
             } catch (IOException | InterruptedException e) {
-                logger.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
-                logger.error("Error stack trace: ", e);
+                log.error("Timeout URL: {}, maxErrorTimes is left {}, will retry after {} seconds", reqUrl, --maxErrorTimes, RECONNECT_MILLIS / 1000);
+                log.error("Error stack trace: ", e);
                 try {
                     Thread.sleep(RECONNECT_MILLIS);
                 } catch (InterruptedException e1) {
-                    logger.error("Error stack trace: ", e1);
+                    log.error("Error stack trace: ", e1);
                 }
             }
         }

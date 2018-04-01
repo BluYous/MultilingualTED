@@ -1,5 +1,6 @@
 package com.bluyous.spider.service;
 
+import com.bluyous.spider.dao.LanguageDao;
 import com.bluyous.spider.dao.TalkDao;
 import com.bluyous.spider.dao.TopicDao;
 import org.springframework.stereotype.Service;
@@ -16,10 +17,12 @@ import java.util.Map;
 public class ApiServiceImpl implements ApiService {
     private final TalkDao talkDao;
     private final TopicDao TopicDao;
+    private final LanguageDao languageDao;
     
-    public ApiServiceImpl(TalkDao talkDao, com.bluyous.spider.dao.TopicDao topicDao) {
+    public ApiServiceImpl(TalkDao talkDao, com.bluyous.spider.dao.TopicDao topicDao, LanguageDao languageDao) {
         this.talkDao = talkDao;
         TopicDao = topicDao;
+        this.languageDao = languageDao;
     }
     
     @Override
@@ -28,7 +31,17 @@ public class ApiServiceImpl implements ApiService {
     }
     
     @Override
-    public List<Map<String, Object>> getTopTopics() {
-        return TopicDao.getTopTopics();
+    public List<Map<String, Object>> getTopics() {
+        return TopicDao.getTopics();
+    }
+    
+    @Override
+    public List<Map<String, Object>> getLanguages() {
+        return languageDao.getLanguages();
+    }
+    
+    @Override
+    public List<Map<String, Object>> getEvents() {
+        return talkDao.getEvents();
     }
 }

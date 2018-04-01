@@ -44,17 +44,22 @@ public class TopicDaoImpl implements TopicDao {
     }
     
     @Override
-    public List<Map<String, Object>> getTopTopics() {
+    public List<Map<String, Object>> getTopics() {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT\n");
-        sql.append("  talk_topic_ref.topic_id,\n");
+        sql.append("  topic.topic_id,\n");
         sql.append("  label,\n");
-        sql.append("  count(*) count\n");
-        sql.append("FROM talk_topic_ref\n");
-        sql.append("  INNER JOIN topic ON talk_topic_ref.topic_id = topic.topic_id\n");
-        sql.append("GROUP BY topic_id\n");
-        sql.append("ORDER BY count DESC\n");
-        sql.append("LIMIT 7;\n");
+        sql.append("  ifnull(t.count, 0) count\n");
+        sql.append("FROM topic\n");
+        sql.append("  LEFT JOIN (\n");
+        sql.append("              SELECT\n");
+        sql.append("                topic_id,\n");
+        sql.append("                count(*) count\n");
+        sql.append("              FROM talk_topic_ref\n");
+        sql.append("              GROUP BY topic_id\n");
+        sql.append("            ) t ON t.topic_id = topic.topic_id\n");
+        sql.append("\n");
+        sql.append("ORDER BY label ASC\n");
     
         List<Map<String, Object>> mapList = jdbcTemplate.queryForList(sql.toString());
         return mapList;

@@ -11,5 +11,9 @@ import java.util.Map;
 public interface ApiService {
     Integer getTalksNum();
     
-    List<Map<String, Object>> getTopTopics();
+    List<Map<String, Object>> getTopics();
+    
+    List<Map<String,Object>> getLanguages();
+    
+    List<Map<String,Object>> getEvents();
 }

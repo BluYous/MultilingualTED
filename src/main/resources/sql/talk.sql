@@ -6,7 +6,7 @@ CREATE TABLE talk (
   talk_slug                  VARCHAR(255),
   talk_default_language_code VARCHAR(20),
   viewed_count               INT(11),
-  filmed_datetime            DATETIME,
+  recorded_at                DATE,
   published_datetime         DATETIME,
   duration                   INT(11),
   intro_duration             DECIMAL(10, 4),
@@ -20,27 +20,21 @@ CREATE TABLE talk (
   last_update_datetime       DATETIME,
   
   entry_datetime             TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  update_datetime            TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  update_datetime            TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
+  ON UPDATE CURRENT_TIMESTAMP(3),
   PRIMARY KEY (talk_id)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4;
 
-# 仅插入基本信息
-INSERT INTO talk (talk_id, talk_url, talk_slug, talk_default_language_code)
-VALUES (:talkId, :talkUrl, :talkSlug, :talkDefaultLanguageCode)
-ON DUPLICATE KEY UPDATE talk_url = values(talk_url), talk_slug = values(talk_slug),
-  talk_default_language_code     = values(talk_default_language_code);
-
-# 插入额外信息
 INSERT INTO talk (talk_id, talk_url, talk_slug, talk_default_language_code,
-                  viewed_count, filmed_datetime, published_datetime, duration,
+                  viewed_count, recorded_at, published_datetime, duration,
                   intro_duration, ad_duration, post_ad_duration, native_language,
                   event_label, event_blurb, thumb_img_url, thumb_img_slug,
                   last_update_datetime)
 VALUES
   (:talkId, :talkUrl, :talkSlug, :talkDefaultLanguageCode, :viewedCount,
-            :filmedDatetime, :publishedDatetime, :duration, :introDuration,
+            :recordedAt, :publishedDatetime, :duration, :introDuration,
             :adDuration, :postAdDuration, :nativeLanguage, :eventLabel,
    :eventBlurb, :thumbImgUrl, :thumbImgSlug, :lastUpdateDatetime)
 ON DUPLICATE KEY UPDATE
@@ -48,7 +42,7 @@ ON DUPLICATE KEY UPDATE
   talk_slug                  = values(talk_slug),
   talk_default_language_code = values(talk_default_language_code),
   viewed_count               = values(viewed_count),
-  filmed_datetime            = values(filmed_datetime),
+  recorded_at                = values(recorded_at),
   published_datetime         = values(published_datetime),
   duration                   = values(duration),
   intro_duration             = values(intro_duration),
@@ -73,4 +67,5 @@ SELECT *
 FROM talk
 WHERE talk_id = 2854
 
-SELECT max(length(event_blurb)) from talk
+SELECT max(length(event_blurb))
+FROM talk

@@ -13,5 +13,5 @@ import java.util.Map;
 public interface TopicDao {
     void saveOrUpdate(List<Topic> topics);
     
-    List<Map<String, Object>> getTopTopics();
+    List<Map<String, Object>> getTopics();
 }

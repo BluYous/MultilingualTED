@@ -4,8 +4,8 @@ import {Col, Row} from 'antd';
 class Header extends Component {
     render() {
         return (
-            <div>
-                <Row >
+            <div style={{width: '1100px'}}>
+                <Row type="flex" justify="center">
                     <Col span={2}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="96" height="54" viewBox="0, 0, 96, 54">
                             <title>TED</title>
@@ -15,7 +15,7 @@ class Header extends Component {
                                 fill="#E62B1E"/>
                         </svg>
                     </Col>
-                    <Col span={12}>
+                    <Col span={22}>
                         <span style={{
                             color: '#999',
                             fontSize: '24px',

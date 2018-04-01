@@ -35,13 +35,13 @@ public class TalkDaoImpl implements TalkDao {
         }
         StringBuilder sql = new StringBuilder();
         sql.append("INSERT INTO talk (talk_id, talk_url, talk_slug, talk_default_language_code,\n");
-        sql.append("                  viewed_count, filmed_datetime, published_datetime, duration,\n");
+        sql.append("                  viewed_count, recorded_at, published_datetime, duration,\n");
         sql.append("                  intro_duration, ad_duration, post_ad_duration, native_language,\n");
         sql.append("                  event_label, event_blurb, thumb_img_url, thumb_img_slug,\n");
         sql.append("                  last_update_datetime)\n");
         sql.append("VALUES\n");
         sql.append("  (:talkId, :talkUrl, :talkSlug, :talkDefaultLanguageCode, :viewedCount,\n");
-        sql.append("            :filmedDatetime, :publishedDatetime, :duration, :introDuration,\n");
+        sql.append("            :recordedAt, :publishedDatetime, :duration, :introDuration,\n");
         sql.append("            :adDuration, :postAdDuration, :nativeLanguage, :eventLabel,\n");
         sql.append("   :eventBlurb, :thumbImgUrl, :thumbImgSlug, :lastUpdateDatetime)\n");
         sql.append("ON DUPLICATE KEY UPDATE\n");
@@ -49,7 +49,7 @@ public class TalkDaoImpl implements TalkDao {
         sql.append("  talk_slug                  = values(talk_slug),\n");
         sql.append("  talk_default_language_code = values(talk_default_language_code),\n");
         sql.append("  viewed_count               = values(viewed_count),\n");
-        sql.append("  filmed_datetime            = values(filmed_datetime),\n");
+        sql.append("  recorded_at                = values(recorded_at),\n");
         sql.append("  published_datetime         = values(published_datetime),\n");
         sql.append("  duration                   = values(duration),\n");
         sql.append("  intro_duration             = values(intro_duration),\n");
@@ -118,5 +118,19 @@ public class TalkDaoImpl implements TalkDao {
         
         Integer talkNum = jdbcTemplate.queryForObject(sql.toString(), Integer.class);
         return talkNum;
+    }
+    
+    @Override
+    public List<Map<String, Object>> getEvents() {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT\n");
+        sql.append("  event_label,\n");
+        sql.append("  count(*) count\n");
+        sql.append("FROM talk\n");
+        sql.append("GROUP BY event_label\n");
+        sql.append("ORDER BY count DESC\n");
+        
+        List<Map<String, Object>> mapList = jdbcTemplate.queryForList(sql.toString());
+        return mapList;
     }
 }

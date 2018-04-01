@@ -4,54 +4,57 @@ import {ajaxAddress} from "../../common";
 import {message, Select, Spin} from 'antd';
 import {PubSub} from 'pubsub-js';
 
-class TopicFilter extends Component {
+class LanguageFilter extends Component {
     constructor(props) {
         super(props);
         this.state = {
             isLoaded: false,
-            topics: [],
+            languages: [],
         }
     }
     
     handleChange = (value) => {
-        PubSub.publish('topicsFilter', value);
+        PubSub.publish('languageFilter', value);
     };
     
     handleFocus = (value) => {
         let {isLoaded} = this.state;
         if (!isLoaded) {
-            axios.get(ajaxAddress + "/topics")
+            axios.get(ajaxAddress + "/languages")
                 .then(res => {
-                    let topics = res.data;
+                    let languages = res.data;
                     this.setState({
                         isLoaded: true,
-                        topics,
+                        languages,
                     })
                 })
                 .catch(e => {
-                    message.error('Fail to load topics');
+                    message.error('Fail to load languages');
                 });
         }
     };
     
     render() {
-        let {topics, isLoaded} = this.state;
+        let {languages, isLoaded} = this.state;
         return (
             <Select
+                showSearch
                 allowClear={true}
-                mode="multiple"
                 style={{width: '100%'}}
-                placeholder="Topics"
+                placeholder="Languages"
+                optionFilterProp="children"
                 notFoundContent={!isLoaded ? <Spin size="default"/> : null}
                 onChange={this.handleChange}
                 onFocus={this.handleFocus}
-                maxTagCount={3}
             >
                 {
-                    topics.map((item, index) => {
+                    languages.map((item, index) => {
                         return (
-                            <Select.Option key={item.topic_id} title={`${item.count} talk(s)`}>
-                                {item.label}
+                            <Select.Option
+                                key={item.language_code}
+                                title={`${item.endonym == null ? '' : item.endonym}  ${item.count} talk(s)`}
+                            >
+                                {item.language_name}
                             </Select.Option>
                         )
                     })
@@ -61,4 +64,4 @@ class TopicFilter extends Component {
     }
 }
 
-export default TopicFilter;
+export default LanguageFilter;
