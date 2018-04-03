@@ -309,30 +309,44 @@ public class TedSpiderTransactionalHelp4TalkService {
         List<TalkMultiLang> talkMultiLangs = new ArrayList<>();
         
         JSONArray languagesJsonArray = json.getJSONObject("__INITIAL_DATA__").getJSONArray("talks").getJSONObject(0).getJSONArray("player_talks").getJSONObject(0).getJSONArray("languages");
-        for (int i = 0; i < languagesJsonArray.size(); i++) {
-            JSONObject languageJson = languagesJsonArray.getJSONObject(i);
-            String languageCode = languageJson.getString("languageCode");
+        if (languagesJsonArray.size() == 0) {
+            final JSONObject talksJson = json.getJSONObject("__INITIAL_DATA__").getJSONArray("talks").getJSONObject(0);
+            final JSONObject playerTalksJson = talksJson.getJSONArray("player_talks").getJSONObject(0);
+    
+            TalkMultiLang talkMultiLang = new TalkMultiLang();
+            talkMultiLang.setTalkId(talkId);
+            talkMultiLang.setLanguageCode(defaultLanguageCode);
+            talkMultiLang.setTitle(playerTalksJson.getString("title"));
+            talkMultiLang.setSpeaker(playerTalksJson.getString("speaker"));
+            talkMultiLang.setDescription(talksJson.getString("description"));
+    
+            talkMultiLangs.add(talkMultiLang);
+        } else {
+            for (int i = 0; i < languagesJsonArray.size(); i++) {
+                JSONObject languageJson = languagesJsonArray.getJSONObject(i);
+                String languageCode = languageJson.getString("languageCode");
+        
+                JSONObject talkMultiLangJson;
+                if (defaultLanguageCode.equals(languageCode)) {
+                    talkMultiLangJson = json;
+                } else {
+                    talkMultiLangJson = getTalkJson(talkUrl, languageCode);
+                }
+        
+                final JSONObject talksJson;
+                if (talkMultiLangJson != null) {
+                    talksJson = talkMultiLangJson.getJSONObject("__INITIAL_DATA__").getJSONArray("talks").getJSONObject(0);
+                    final JSONObject playerTalksJson = talksJson.getJSONArray("player_talks").getJSONObject(0);
             
-            JSONObject talkMultiLangJson;
-            if (defaultLanguageCode.equals(languageCode)) {
-                talkMultiLangJson = json;
-            } else {
-                talkMultiLangJson = getTalkJson(talkUrl, languageCode);
-            }
+                    TalkMultiLang talkMultiLang = new TalkMultiLang();
+                    talkMultiLang.setTalkId(talkId);
+                    talkMultiLang.setLanguageCode(languageCode);
+                    talkMultiLang.setTitle(playerTalksJson.getString("title"));
+                    talkMultiLang.setSpeaker(playerTalksJson.getString("speaker"));
+                    talkMultiLang.setDescription(talksJson.getString("description"));
             
-            final JSONObject talksJson;
-            if (talkMultiLangJson != null) {
-                talksJson = talkMultiLangJson.getJSONObject("__INITIAL_DATA__").getJSONArray("talks").getJSONObject(0);
-                final JSONObject playerTalksJson = talksJson.getJSONArray("player_talks").getJSONObject(0);
-                
-                TalkMultiLang talkMultiLang = new TalkMultiLang();
-                talkMultiLang.setTalkId(talkId);
-                talkMultiLang.setLanguageCode(languageCode);
-                talkMultiLang.setTitle(playerTalksJson.getString("title"));
-                talkMultiLang.setSpeaker(playerTalksJson.getString("speaker"));
-                talkMultiLang.setDescription(talksJson.getString("description"));
-                
-                talkMultiLangs.add(talkMultiLang);
+                    talkMultiLangs.add(talkMultiLang);
+                }
             }
         }
         return talkMultiLangs;
