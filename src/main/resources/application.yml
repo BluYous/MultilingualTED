@@ -6,4 +6,5 @@ spring:
     username: root
     password: 123456
 resources:
-  defaultPath: D:/ted/
+  defaultPath: D:/ted/resources
+  defaultLogPath: D:/ted/log

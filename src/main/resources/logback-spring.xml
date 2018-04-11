@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="1 seconds" debug="false">
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
-
+    <springProperty scope="context" name="LOG_HOME" source="resources.defaultLogPath"/>
+    
     <appender name="spiderLog" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>D:/log/spider.%d.log</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/spider.%d.log</fileNamePattern>
         </rollingPolicy>
     </appender>
 
@@ -19,7 +20,7 @@
             <pattern>${FILE_LOG_PATTERN}</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>D:/log/error.%d.log</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/error.%d.log</fileNamePattern>
         </rollingPolicy>
     </appender>
 
