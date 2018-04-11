@@ -1,14 +1,19 @@
 package com.bluyous.spider.dao;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.bluyous.spider.bean.Talk;
 import com.bluyous.spider.bean.TalkMultiLang;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +23,7 @@ import java.util.Map;
  * @since 2018-02-21
  */
 @Repository
+@Slf4j
 public class TalkDaoImpl implements TalkDao {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -129,8 +135,201 @@ public class TalkDaoImpl implements TalkDao {
         sql.append("FROM talk\n");
         sql.append("GROUP BY event_label\n");
         sql.append("ORDER BY count DESC\n");
-        
+    
         List<Map<String, Object>> mapList = jdbcTemplate.queryForList(sql.toString());
         return mapList;
+    }
+    
+    @Override
+    public List<Map<String, Object>> getFilterResults(JSONObject json) {
+        if (json == null) {
+            return null;
+        }
+        Map<String, Object> params = new HashMap<>();
+        String searchFilter = json.getString("searchFilter");
+        String languageFilter = json.getString("languageFilter");
+        String eventFilter = json.getString("eventFilter");
+        JSONArray topicFilter = json.getJSONArray("topicFilter");
+        Integer sortFilter = json.getInteger("sortFilter");
+        
+        
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT\n");
+        sql.append("  talk.talk_id,\n");
+        sql.append("  speaker,\n");
+        sql.append("  title,\n");
+        sql.append("  published_datetime,\n");
+        sql.append("  language_code,\n");
+        sql.append("  duration,\n");
+        sql.append("  rated,\n");
+        sql.append("  concat(resource.file_path, '/', resource.file_name) thumb_img_path\n");
+        sql.append("FROM talk\n");
+        sql.append("  INNER JOIN (SELECT DISTINCT talk_id\n");
+        sql.append("              FROM talk_topic_ref\n");
+        if (topicFilter != null && topicFilter.size() != 0) {
+            sql.append("              WHERE topic_id IN (:topicFilter)\n");
+            params.put("topicFilter", topicFilter);
+        }
+        sql.append("             ) topic ON topic.talk_id = talk.talk_id\n");
+        sql.append("  LEFT JOIN talk_multi_lang ON talk.talk_id = talk_multi_lang.talk_id\n");
+        sql.append("  LEFT JOIN (SELECT\n");
+        sql.append("               t.talk_id,\n");
+        sql.append("               group_concat(t.rating_name ORDER BY t.group_rank SEPARATOR ', ') rated\n");
+        sql.append("             FROM (SELECT\n");
+        sql.append("                     talk_rating.talk_id,\n");
+        sql.append("                     rating_id,\n");
+        sql.append("                     rating_name,\n");
+        sql.append("                     rating_count,\n");
+        sql.append(
+                "                     @cur_group_rank := if(@pre_group = talk_rating.talk_id, @cur_group_rank + 1, 1) group_rank,\n");
+        sql.append(
+                "                     @pre_group := talk_rating.talk_id                                               group_id\n");
+        sql.append("                   FROM talk_rating\n");
+        sql.append("                     ,\n");
+        sql.append("                     (SELECT\n");
+        sql.append("                        @cur_group_rank := 1,\n");
+        sql.append("                        @pre_group := -1) init\n");
+        sql.append("                   ORDER BY talk_id, rating_count DESC) t\n");
+        sql.append("               INNER JOIN (SELECT talk_id\n");
+        sql.append("                           FROM talk_rating\n");
+        sql.append("                           GROUP BY talk_id\n");
+        sql.append("                           HAVING sum(rating_count) > 50) t2 ON t2.talk_id = t.talk_id\n");
+        sql.append("             WHERE t.group_rank <= 2\n");
+        sql.append("             GROUP BY talk_id\n");
+        sql.append("            ) t ON t.talk_id = talk.talk_id\n");
+        sql.append("  LEFT JOIN resource ON thumb_img_url = resource.url\n");
+        sql.append("WHERE\n");
+        if (languageFilter == null || "".equals(languageFilter)) {
+            sql.append("  talk_default_language_code = language_code\n");
+        } else {
+            sql.append("  language_code = :languageFilter\n");
+            params.put("languageFilter", languageFilter);
+        }
+        
+        if (searchFilter != null) {
+            String searchText = null;
+            if (languageFilter == null || "en".equals(languageFilter)) {
+                searchText = "% " + searchFilter + " %";
+            } else {
+                searchText = "%" + searchFilter + "%";
+            }
+            sql.append("  AND title LIKE :searchText\n");
+            params.put("searchText", searchText);
+        }
+        
+        if (eventFilter != null && !"".equals(eventFilter)) {
+            sql.append("  AND event_label = :eventFilter\n");
+            params.put("eventFilter", eventFilter);
+        }
+        if (sortFilter == 1) {
+            sql.append("ORDER BY published_datetime DESC\n");
+        } else if (sortFilter == 2) {
+            sql.append("ORDER BY published_datetime ASC\n");
+        } else if (sortFilter == 3) {
+            sql.append("ORDER BY viewed_count DESC\n");
+        }
+        
+        List<Map<String, Object>> mapList = namedParameterJdbcTemplate.queryForList(sql.toString(), params);
+        return mapList;
+    }
+    
+    @Override
+    public Map<String, Object> getTalk(String talkId, String languageCode) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("talkId", Integer.valueOf(talkId));
+        
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT\n");
+        sql.append("  talk.talk_id,\n");
+        sql.append("  talk_multi_lang.language_code,\n");
+        sql.append("  title,\n");
+        sql.append("  speaker,\n");
+        sql.append("  description,\n");
+        sql.append("  talk_url,\n");
+        sql.append("  viewed_count,\n");
+        sql.append("  recorded_at,\n");
+        sql.append("  published_datetime,\n");
+        sql.append("  duration,\n");
+        sql.append("  l.language_name                                     native_language_name,\n");
+        sql.append("  l.endonym                                           native_language_endonym,\n");
+        sql.append("  event_label,\n");
+        sql.append("  event_blurb,\n");
+        sql.append("  last_update_datetime,\n");
+        sql.append("  concat(resource.file_path, '/', resource.file_name) thumb_img_path\n");
+        sql.append("FROM talk\n");
+        sql.append("  LEFT JOIN talk_multi_lang ON talk.talk_id = talk_multi_lang.talk_id\n");
+        sql.append("  LEFT JOIN language l ON native_language = l.language_code\n");
+        sql.append("  LEFT JOIN resource ON thumb_img_url = resource.url\n");
+        sql.append("WHERE talk.talk_id = :talkId\n");
+        if (languageCode != null && !"".equals(languageCode)) {
+            sql.append("      AND talk_multi_lang.language_code = :languageCode\n");
+            params.put("languageCode", languageCode);
+        } else {
+            sql.append("      AND talk_default_language_code = talk_multi_lang.language_code\n");
+        }
+        
+        Map<String, Object> map = null;
+        try {
+            map = namedParameterJdbcTemplate.queryForMap(sql.toString(), params);
+        } catch (DataAccessException e) {
+            log.info("无对应记录 {} {}", talkId, languageCode);
+            return null;
+        }
+        return map;
+    }
+    
+    public List<Map<String, Object>> getRatings(Integer talkId) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("talkId", talkId);
+        
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT\n");
+        sql.append("  rating_id,\n");
+        sql.append("  rating_name,\n");
+        sql.append("  rating_count\n");
+        sql.append("FROM talk_rating\n");
+        sql.append("WHERE talk_id = :talkId\n");
+        
+        
+        List<Map<String, Object>> map = null;
+        map = namedParameterJdbcTemplate.queryForList(sql.toString(), params);
+        return map;
+    }
+    
+    public List<Map<String, Object>> getTopics(Integer talkId) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("talkId", talkId);
+        
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT\n");
+        sql.append("  topic.topic_id,\n");
+        sql.append("  label\n");
+        sql.append("FROM talk_topic_ref\n");
+        sql.append("  INNER JOIN topic ON topic.topic_id = talk_topic_ref.topic_id\n");
+        sql.append("WHERE talk_id = :talkId\n");
+        
+        List<Map<String, Object>> map = null;
+        map = namedParameterJdbcTemplate.queryForList(sql.toString(), params);
+        return map;
+    }
+    
+    public List<Map<String, Object>> getDownloads(Integer talkId) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("talkId", talkId);
+        
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT\n");
+        sql.append("  download_type,\n");
+        sql.append("  uri,\n");
+        sql.append("  file_size_bytes,\n");
+        sql.append("  mime_type\n");
+        sql.append("FROM talk_download\n");
+        sql.append("WHERE talk_id = :talkId AND download_type NOT LIKE 'podcast%'\n");
+        sql.append("ORDER BY mime_type DESC, file_size_bytes DESC\n");
+        
+        
+        List<Map<String, Object>> map = null;
+        map = namedParameterJdbcTemplate.queryForList(sql.toString(), params);
+        return map;
     }
 }

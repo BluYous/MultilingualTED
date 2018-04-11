@@ -3,6 +3,7 @@ package com.bluyous.spider.dao;
 import com.bluyous.spider.bean.Speaker;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author BluYous
@@ -11,4 +12,6 @@ import java.util.List;
  */
 public interface SpeakerDao {
     void saveOrUpdate(List<Speaker> speakers);
+    
+    List<Map<String, Object>> getSpeakers(Integer talkId);
 }

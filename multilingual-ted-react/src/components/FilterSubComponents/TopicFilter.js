@@ -20,7 +20,7 @@ class TopicFilter extends Component {
     handleFocus = (value) => {
         let {isLoaded} = this.state;
         if (!isLoaded) {
-            axios.get(ajaxAddress + "/topics")
+            axios.get(`${ajaxAddress}/topics`)
                 .then(res => {
                     let topics = res.data;
                     this.setState({

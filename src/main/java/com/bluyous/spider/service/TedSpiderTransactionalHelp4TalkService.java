@@ -12,6 +12,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,22 +39,24 @@ import static com.bluyous.spider.service.TedSpiderService.*;
 @Slf4j
 public class TedSpiderTransactionalHelp4TalkService {
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+    @Value("${resources.defaultPath}")
+    private String defaultPath;
     private final LanguageDao languageDao;
     private final TalkDao talkDao;
     private final SpeakerDao speakerDao;
     private final RatingDao ratingDao;
     private final TalkDownloadDao talkDownloadDao;
-    private final TranscriptDao transcriptDao;
     private final ResourceDao resourceDao;
     
     @Autowired
-    public TedSpiderTransactionalHelp4TalkService(LanguageDao languageDao, TalkDao talkDao, SpeakerDao speakerDao, RatingDao ratingDao, TalkDownloadDao talkDownloadDao, TranscriptDao transcriptDao, ResourceDao resourceDao) {
+    public TedSpiderTransactionalHelp4TalkService(LanguageDao languageDao, TalkDao talkDao, SpeakerDao speakerDao,
+                                                  RatingDao ratingDao, TalkDownloadDao talkDownloadDao,
+                                                  ResourceDao resourceDao) {
         this.languageDao = languageDao;
         this.talkDao = talkDao;
         this.speakerDao = speakerDao;
         this.ratingDao = ratingDao;
         this.talkDownloadDao = talkDownloadDao;
-        this.transcriptDao = transcriptDao;
         this.resourceDao = resourceDao;
     }
     
@@ -394,7 +397,7 @@ public class TedSpiderTransactionalHelp4TalkService {
             String filePath = resource.getFilePath();
             String fileName = resource.getFileName();
             byte[] bytes = resource.getBytes();
-            bytes2File(bytes, "D:/ted/" + File.separator + filePath, fileName);
+            bytes2File(bytes, defaultPath + File.separator + filePath, fileName);
         }
     }
     
@@ -480,8 +483,6 @@ public class TedSpiderTransactionalHelp4TalkService {
     }
     
     private void bytes2File(byte[] buf, String filePath, String fileName) {
-        BufferedOutputStream bos = null;
-        FileOutputStream fos = null;
         File file;
         try {
             File dir = new File(filePath);
@@ -489,26 +490,12 @@ public class TedSpiderTransactionalHelp4TalkService {
                 dir.mkdirs();
             }
             file = new File(filePath + File.separator + fileName);
-            fos = new FileOutputStream(file);
-            bos = new BufferedOutputStream(fos);
-            bos.write(buf);
-        } catch (Exception e) {
+            try (FileOutputStream fos = new FileOutputStream(file); BufferedOutputStream bos = new BufferedOutputStream(
+                    fos)) {
+                bos.write(buf);
+            }
+        } catch (IOException e) {
             log.error("Error stack trace: ", e);
-        } finally {
-            if (bos != null) {
-                try {
-                    bos.close();
-                } catch (IOException e) {
-                    log.error("Error stack trace: ", e);
-                }
-            }
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                    log.error("Error stack trace: ", e);
-                }
-            }
         }
     }
     
@@ -532,75 +519,11 @@ public class TedSpiderTransactionalHelp4TalkService {
                 out.write(buffer, 0, len);
             }
         } finally {
-            in.close();
+            if (in != null) {
+                in.close();
+            }
             out.close();
         }
         return out.toByteArray();
     }
-    
-    // private void synTalkTranscript() {
-    //     List<Transcript> toSynSubtitleList = transcriptDao.listToSynSubtitleList();
-    //     for (Transcript toSynSubtitle : toSynSubtitleList) {
-    //         final Integer talkId = toSynSubtitle.getTalkId();
-    //         final String languageCode = toSynSubtitle.getLanguageCode();
-    //         try {
-    //             Thread.sleep(NEXT_REQ_MILLIS);
-    //         } catch (InterruptedException e) {
-    //             e.printStackTrace();
-    //         }
-    //         System.out.println("talkId = " + talkId + ", languageCode = " + languageCode);
-    //         JSONObject json = getTranscriptJson(talkId, languageCode);
-    //         if (json == null) {
-    //             continue;
-    //         }
-    //
-    //         List<Transcript> transcripts = new ArrayList<>();
-    //         Integer sid = 0;
-    //
-    //         Integer paragraph = 0;
-    //         JSONArray paragraphsArray = json.getJSONArray("paragraphs");
-    //         for (int i = 0; i < paragraphsArray.size(); i++) {
-    //             JSONArray cuesArray = paragraphsArray.getJSONObject(i).getJSONArray("cues");
-    //             paragraph++;
-    //             for (int j = 0; j < cuesArray.size(); j++) {
-    //                 Integer subtitleTime = cuesArray.getJSONObject(j).getInteger("time");
-    //                 String subtitleText = cuesArray.getJSONObject(j).getString("text");
-    //
-    //                 Transcript transcript = new Transcript();
-    //                 transcript.setTalkId(talkId);
-    //                 transcript.setLanguageCode(languageCode);
-    //                 transcript.setSid(++sid);
-    //                 transcript.setParagraph(paragraph);
-    //                 transcript.setSubtitleTime(subtitleTime);
-    //                 transcript.setSubtitleText(subtitleText);
-    //
-    //                 transcripts.add(transcript);
-    //             }
-    //         }
-    //         transcriptDao.saveOrUpdate(transcripts);
-    //         transcriptDao.deleteRedundantTranscript(transcripts.get(transcripts.size() - 1));
-    //     }
-    // }
-    //
-    // private JSONObject getTranscriptJson(Integer talkId, String languageCode) {
-    //     final String reqUrl = "https://www.ted.com/talks/" + talkId + "/transcript.json?language=" + languageCode;
-    //     final Map<String, String> headers = new HashMap<>();
-    //     headers.put("Accept", "application/json, text/javascript, */*; q=0.01");
-    //     headers.put("Accept-Encoding", "gzip, deflate, br");
-    //     headers.put("Referer", "https://www.ted.com/talks");
-    //     headers.put("User-Agent",
-    //             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36");
-    //     headers.put("X-Requested-With", "XMLHttpRequest");
-    //     Connection.Response res = null;
-    //     try {
-    //         res = Jsoup.connect(reqUrl).headers(headers).timeout(0).ignoreContentType(true).execute();
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-    //     if (res != null) {
-    //         String json = res.body();
-    //         return JSON.parseObject(json);
-    //     }
-    //     return null;
-    // }
 }

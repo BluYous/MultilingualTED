@@ -20,7 +20,7 @@ class EventFilter extends Component {
     handleFocus = (value) => {
         let {isLoaded} = this.state;
         if (!isLoaded) {
-            axios.get(ajaxAddress + "/events")
+            axios.get(`${ajaxAddress}/events`)
                 .then(res => {
                     let events = res.data;
                     this.setState({

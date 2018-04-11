@@ -117,4 +117,4 @@ public class Resource {
     public void setLastModified(String lastModified) {
         this.lastModified = lastModified;
     }
-};
+}

@@ -1,5 +1,6 @@
 package com.bluyous.spider.dao;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bluyous.spider.bean.Talk;
 import com.bluyous.spider.bean.TalkMultiLang;
 
@@ -23,4 +24,14 @@ public interface TalkDao {
     Integer getTalkNum();
     
     List<Map<String,Object>> getEvents();
+    
+    List<Map<String, Object>> getFilterResults(JSONObject json);
+    
+    Map<String, Object> getTalk(String talkId, String languageCode);
+    
+    List<Map<String, Object>> getRatings(Integer talkId);
+    
+    List<Map<String, Object>> getTopics(Integer talkId);
+    
+    List<Map<String, Object>> getDownloads(Integer talkId);
 }

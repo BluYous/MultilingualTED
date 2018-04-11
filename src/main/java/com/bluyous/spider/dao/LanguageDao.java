@@ -16,4 +16,6 @@ public interface LanguageDao {
     void saveOrUpdate(List<Language> languages);
     
     List<Map<String,Object>> getLanguages();
+    
+    List<Map<String, Object>> getSubtitleLanguages(List<String> languageCodeList);
 }

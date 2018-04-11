@@ -1,8 +1,9 @@
 import React, {Component} from 'react';
 import Header from './Header';
-import TalkSummary from './TalkSummary';
-import Filter from './Filter';
+
 import {Divider} from 'antd';
+import Footer from "./Footer";
+
 
 class App extends Component {
     render() {
@@ -10,9 +11,9 @@ class App extends Component {
             <div>
                 <Header/>
                 <Divider/>
-                <TalkSummary/>
+                {this.props.children}
                 <Divider/>
-                <Filter/>
+                <Footer/>
             </div>
         );
     }

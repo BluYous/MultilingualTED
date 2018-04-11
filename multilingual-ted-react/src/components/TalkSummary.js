@@ -12,7 +12,7 @@ class TalkSummary extends Component {
     }
     
     componentWillMount() {
-        axios.get(ajaxAddress + "/talksNum")
+        axios.get(`${ajaxAddress}/talksNum`)
             .then(res => {
                 let talksNum = res.data;
                 this.setState({

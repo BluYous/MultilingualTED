@@ -1,10 +1,11 @@
 import React, {Component} from 'react';
 import {Col, Row} from 'antd';
+import {Link} from "react-router";
 
 class Header extends Component {
     render() {
         return (
-            <div style={{width: '1100px'}}>
+            <Link style={{width: '1100px'}} to='/'>
                 <Row type="flex" justify="center">
                     <Col span={2}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="96" height="54" viewBox="0, 0, 96, 54">
@@ -25,7 +26,7 @@ class Header extends Component {
                         }}>Ideas worth spreading</span>
                     </Col>
                 </Row>
-            </div>
+            </Link>
         )
     }
 }

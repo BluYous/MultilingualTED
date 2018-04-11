@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -84,5 +85,24 @@ public class LanguageDaoImpl implements LanguageDao {
         
         List<Map<String, Object>> mapList = jdbcTemplate.queryForList(sql.toString());
         return mapList;
+    }
+    
+    @Override
+    public List<Map<String, Object>> getSubtitleLanguages(List<String> languageCodeList) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("languageCodeList", languageCodeList);
+        
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT\n");
+        sql.append("  language_code,\n");
+        sql.append("  language_name,\n");
+        sql.append("  endonym,\n");
+        sql.append("  is_rtl\n");
+        sql.append("FROM language\n");
+        sql.append("WHERE language_code IN (:languageCodeList)\n");
+        
+        List<Map<String, Object>> map = null;
+        map = namedParameterJdbcTemplate.queryForList(sql.toString(), params);
+        return map;
     }
 }

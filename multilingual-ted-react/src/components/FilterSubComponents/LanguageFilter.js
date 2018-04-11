@@ -20,7 +20,7 @@ class LanguageFilter extends Component {
     handleFocus = (value) => {
         let {isLoaded} = this.state;
         if (!isLoaded) {
-            axios.get(ajaxAddress + "/languages")
+            axios.get(`${ajaxAddress}/languages`)
                 .then(res => {
                     let languages = res.data;
                     this.setState({

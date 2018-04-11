@@ -2,13 +2,14 @@ package com.bluyous.spider.dao;
 
 import com.bluyous.spider.bean.Speaker;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author BluYous
@@ -17,12 +18,10 @@ import java.util.List;
  */
 @Repository
 public class SpeakerDaoImpl implements SpeakerDao {
-    private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     
     @Autowired
-    public SpeakerDaoImpl(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public SpeakerDaoImpl(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
     
@@ -54,5 +53,31 @@ public class SpeakerDaoImpl implements SpeakerDao {
             sqlParameterSources[i] = new BeanPropertySqlParameterSource(speakers.get(i));
         }
         namedParameterJdbcTemplate.batchUpdate(sql.toString(), sqlParameterSources);
+    }
+    
+    @Override
+    public List<Map<String, Object>> getSpeakers(Integer talkId) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("talkId", talkId);
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT\n");
+        sql.append("  speaker.speaker_id,\n");
+        sql.append("  slug,\n");
+        sql.append("  first_name,\n");
+        sql.append("  last_name,\n");
+        sql.append("  description,\n");
+        sql.append("  concat(resource.file_path, '/', resource.file_name) photo_path,\n");
+        sql.append("  what_others_say,\n");
+        sql.append("  who_they_are,\n");
+        sql.append("  why_listen,\n");
+        sql.append("  title,\n");
+        sql.append("  middle_initial\n");
+        sql.append("FROM speaker\n");
+        sql.append("  INNER JOIN talk_speaker_ref ON speaker.speaker_id = talk_speaker_ref.speaker_id\n");
+        sql.append("  LEFT JOIN resource ON photo_url = resource.url\n");
+        sql.append("WHERE talk_id = :talkId\n");
+        
+        List<Map<String, Object>> mapList = namedParameterJdbcTemplate.queryForList(sql.toString(), params);
+        return mapList;
     }
 }
